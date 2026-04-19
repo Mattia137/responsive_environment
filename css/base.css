@@ -124,6 +124,18 @@ input:focus, select:focus, button:focus { outline: 1px solid var(--accent); outl
 ::-webkit-scrollbar-thumb:hover { background: var(--ink-faint); }
 
 /* --------------------------------------------------------------
+   Force-hide MapTiler / MapLibre branding
+   -------------------------------------------------------------- */
+.maplibregl-ctrl-logo,
+.maplibregl-ctrl-attrib,
+.maplibregl-ctrl-attrib-button,
+.maplibregl-ctrl-attrib-inner,
+.maptiler-ctrl-logo,
+.maptiler-ctrl-attrib {
+  display: none !important;
+}
+
+/* --------------------------------------------------------------
    Theme transition — only when user clicks the toggle
    (a class is added to body briefly to enable smooth crossfade)
    -------------------------------------------------------------- */

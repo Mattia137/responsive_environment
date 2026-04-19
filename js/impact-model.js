@@ -195,7 +195,7 @@ export function projectPedestrian(geometry, program, context) {
       { label: 'Weekend peak day',   baseline: '—', projected: Math.round(annual_visitors/365*1.8).toString(), delta: 'est.', sign:'neu' },
     ],
     spatial: {
-      type: 'flow',
+      type: 'ped',
       features: generatePedFlowFeatures(context.site_lat_lon, peak_hr),
       paint_key: 'pedestrian',
     },
@@ -253,8 +253,13 @@ export function projectDisplacement(geometry, program, context) {
       { label: 'Rent-stabilized @ risk', baseline: '—',   projected: `${Math.round(880*scale_factor)} units`, delta: 'flag',    sign:'neg' },
     ],
     spatial: {
-      type: 'choropleth',
-      features: [], // filled by data-loader when ACS GeoJSON is present
+      type: 'rings',
+      features: generateRingFeatures(context.site_lat_lon, [
+        { radius_m: 100, value: 0.6 * scale_factor, label: 'HIGH RISK' },
+        { radius_m: 250, value: 0.4 * scale_factor, label: 'MED RISK' },
+        { radius_m: 500, value: 0.2 * scale_factor, label: 'LOW RISK' },
+        { radius_m: 800, value: 0.08 * scale_factor, label: 'FRINGE' },
+      ]),
       paint_key: 'displacement',
     },
   };
@@ -307,7 +312,7 @@ export function projectTransit(geometry, program, context) {
     ],
     spatial: {
       type: 'points',
-      features: [],  // to be populated by transit layer from GTFS lookup
+      features: generateTransitStationFeatures(context.site_lat_lon, daily_entries),
       paint_key: 'transit',
     },
   };
@@ -368,7 +373,7 @@ export function projectWater(geometry, program, context) {
     ],
     spatial: {
       type: 'flow',
-      features: [],  // populated when CSO outfall GeoJSON is loaded
+      features: generateWaterFlowFeatures(context.site_lat_lon, runoff_gpd),
       paint_key: 'water',
     },
   };
@@ -410,12 +415,10 @@ export function projectWaste(geometry, program, context) {
    ================================================================ */
 
 function generateRingFeatures(siteLatLon, bands) {
-  // bands: [{ radius_m, value }]
-  // turf.circle expects [lng, lat]
   const [lat, lon] = siteLatLon;
   return bands.map(b => ({
     type: 'Feature',
-    properties: { radius_m: b.radius_m, value: b.value },
+    properties: { radius_m: b.radius_m, value: b.value, label: b.label || `${b.radius_m}m` },
     geometry: turf.circle([lon, lat], b.radius_m / 1000, { units: 'kilometers', steps: 96 }).geometry,
   }));
 }
@@ -448,31 +451,86 @@ function generateFeederFlowFeatures(siteLatLon, targetLngLat, load_MW) {
 }
 
 function generatePedFlowFeatures(siteLatLon, peak_hr) {
-  // Flows from nearby subway stations into site. The layer code can override
-  // with real GTFS data; this is a placeholder for when it's offline.
   const [lat, lon] = siteLatLon;
-  const stations = [
-    { lngLat: [lon + 0.006, lat], weight: 0.6 },
-    { lngLat: [lon + 0.004, lat - 0.003], weight: 0.3 },
-    { lngLat: [lon - 0.002, lat + 0.003], weight: 0.1 },
+  const origins = [
+    { lngLat: [-74.0019, 40.7556], label: '34 ST-HY', weight: 0.55 },
+    { lngLat: [-73.9916, 40.7505], label: '34 ST-PENN', weight: 0.30 },
+    { lngLat: [-74.0044, 40.7504], label: 'HIGH LINE', weight: 0.15 },
   ];
-  return stations.map(s => ({
+  const features = [];
+  origins.forEach(o => {
+    // Flow line
+    features.push({
+      type: 'Feature',
+      properties: { weight: o.weight * peak_hr, label: o.label },
+      geometry: { type: 'LineString', coordinates: [o.lngLat, [lon, lat]] },
+    });
+    // Origin point
+    features.push({
+      type: 'Feature',
+      properties: { weight: o.weight * peak_hr, label: o.label },
+      geometry: { type: 'Point', coordinates: o.lngLat },
+    });
+  });
+  return features;
+}
+
+/* Hudson Yards area subway stations (real coords, 2024 daily entries) */
+const SUBWAY_STATIONS_HY = [
+  { label: '34 ST-HUDSON YARDS (7)',   lngLat: [-74.0019, 40.7556], daily: 15200 },
+  { label: '34 ST-PENN (A·C·E)',       lngLat: [-73.9916, 40.7505], daily: 52000 },
+  { label: '28 ST (1)',                lngLat: [-74.0021, 40.7483], daily:  8400 },
+  { label: '23 ST (C·E)',              lngLat: [-74.0001, 40.7448], daily: 13800 },
+  { label: 'HIGH LINE ACCESS (ENTRY)', lngLat: [-74.0044, 40.7504], daily:  6000 },
+];
+
+function generateTransitStationFeatures(siteLatLon, daily_delta) {
+  return SUBWAY_STATIONS_HY.map(s => ({
     type: 'Feature',
-    properties: { weight: s.weight * peak_hr },
-    geometry: { type: 'LineString', coordinates: [s.lngLat, [lon, lat]] },
+    properties: {
+      label:      s.label,
+      daily:      s.daily,
+      delta:      Math.round(daily_delta * 0.7 / SUBWAY_STATIONS_HY.length),
+      value:      s.daily / 60000,  // normalised 0-1 for circle-size
+    },
+    geometry: { type: 'Point', coordinates: s.lngLat },
   }));
+}
+
+/* Hudson River / CSO outfall near Hudson Yards: [-74.0145, 40.7598] (CSO OH-014) */
+function generateWaterFlowFeatures(siteLatLon, runoff_gpd) {
+  const [lat, lon] = siteLatLon;
+  const csoOutfall = [-74.0145, 40.7598];
+  return [
+    {
+      type: 'Feature',
+      properties: { runoff_gpd: Math.round(runoff_gpd), label: 'CSO OUTFALL OH-014' },
+      geometry: { type: 'LineString', coordinates: [[lon, lat], csoOutfall] },
+    },
+    {
+      type: 'Feature',
+      properties: { label: 'CSO OH-014', runoff_gpd: Math.round(runoff_gpd) },
+      geometry: { type: 'Point', coordinates: csoOutfall },
+    },
+  ];
 }
 
 function generateInducedPoints(siteLatLon, count) {
   const [lat, lon] = siteLatLon;
+  const kinds = [
+    { key: 'fb',     label: 'F&B' },
+    { key: 'retail', label: 'RETAIL' },
+    { key: 'hotel',  label: 'HOTEL' },
+  ];
   const pts = [];
-  for (let i = 0; i < count; i++) {
-    const d = 0.001 + Math.random() * 0.004;
+  for (let i = 0; i < Math.min(count, 40); i++) {
+    const d = 0.0005 + Math.random() * 0.004;
     const t = Math.random() * Math.PI * 2;
+    const k = kinds[Math.floor(Math.random() * kinds.length)];
     pts.push({
       type: 'Feature',
-      properties: { kind: ['fb','retail','hotel'][Math.floor(Math.random()*3)] },
-      geometry: { type: 'Point', coordinates: [lon + d*Math.cos(t), lat + d*Math.sin(t)] },
+      properties: { kind: k.key, label: k.label, value: Math.random() },
+      geometry: { type: 'Point', coordinates: [lon + d * Math.cos(t), lat + d * Math.sin(t)] },
     });
   }
   return pts;

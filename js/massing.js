@@ -9,7 +9,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { CONFIG } from '../config.js';
-import { getMap } from './map.js';
+import { getMap, onStyleLoad } from './map.js';
 
 let _threeLayer = null;
 let _scene      = null;
@@ -69,7 +69,7 @@ function ensureCustomLayer() {
       const { anchor_lon, anchor_lat, rotation_deg, vertical_offset_m, uniform_scale } = _userTransform;
 
       // Reference site transform: fromLngLat → makeTranslation → scale(mScale, -mScale, mScale) → rotateX(PI/2)
-      const mc = maplibregl.MercatorCoordinate.fromLngLat(
+      const mc = maptilersdk.MercatorCoordinate.fromLngLat(
         [anchor_lon, anchor_lat],
         vertical_offset_m
       );
@@ -185,6 +185,15 @@ export function extractGeometry() {
 
   return { footprint_m2, height_m, volume_m3, num_floors_est, width_m, depth_m };
 }
+
+/* Re-attach three.js layer after a MapTiler style reload (style swap removes all layers) */
+onStyleLoad(() => {
+  if (!_threeLayer) return;
+  const map = getMap();
+  if (!map || map.getLayer('allspark-massing')) return;
+  map.addLayer(_threeLayer);
+  map.triggerRepaint();
+});
 
 /* --- 2D convex hull (monotone chain) --- */
 function convexHull2D(points) {
