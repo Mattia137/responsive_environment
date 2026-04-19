@@ -9,9 +9,11 @@ let map = null;
 let _onReadyCallbacks = [];
 let _ready = false;
 
-const MAP_STYLES = {
-  dark:  `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${CONFIG.MAPTILER_KEY}`,
-  light: `https://api.maptiler.com/maps/streets-v2-light/style.json?key=${CONFIG.MAPTILER_KEY}`,
+const getMapStyle = (theme) => {
+  const key = CONFIG.MAPTILER_KEY;
+  return theme === 'light' 
+    ? `https://api.maptiler.com/maps/streets-v2-light/style.json?key=${key}`
+    : `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${key}`;
 };
 
 export function initMap(state) {
@@ -19,7 +21,7 @@ export function initMap(state) {
 
   map = new maptilersdk.Map({
     container: 'map',
-    style: MAP_STYLES[state.theme || 'dark'],
+    style: getMapStyle(state.theme || 'dark'),
     center: CONFIG.DEFAULT_CENTER,
     zoom:   CONFIG.DEFAULT_ZOOM,
     pitch:  CONFIG.DEFAULT_PITCH,
@@ -44,7 +46,7 @@ export function onMapReady(cb) { if (_ready) cb(); else _onReadyCallbacks.push(c
 
 export function setTheme(theme) {
   if (!map) return;
-  const styleUrl = MAP_STYLES[theme];
+  const styleUrl = getMapStyle(theme);
   const customLayers = _snapshotCustomLayers();
   map.setStyle(styleUrl);
   map.once('styledata', () => {
