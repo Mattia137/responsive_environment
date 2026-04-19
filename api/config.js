@@ -7,6 +7,6 @@ export default function handler(req, res) {
   }
 
   return res.status(200).json({
-    MAPTILER_KEY: process.env.MAPTILER_API || ''
+    MAPTILER_KEY: process.env.MAPTILER_API_01 || process.env.MAPTILER_API || ''
   });
 }
