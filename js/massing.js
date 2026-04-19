@@ -124,12 +124,6 @@ export async function loadGLB(fileOrUrl) {
         }
       });
 
-      // Center the model so its footprint origin lies at (0,0)
-      _modelBBox = new THREE.Box3().setFromObject(_model);
-      const center = new THREE.Vector3();
-      _modelBBox.getCenter(center);
-      _model.position.set(-center.x, -_modelBBox.min.y, -center.z);
-
       _scene.add(_model);
       getMap().triggerRepaint();
 
