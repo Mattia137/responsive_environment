@@ -141,7 +141,14 @@ export function projectAir(geometry, program, context) {
     ],
     spatial: {
       type: 'heatmap',
-      features: generatePlumeFeatures(context.site_lat_lon, trucks_per_day_peak),
+      features: [
+        ...generatePlumeFeatures(context.site_lat_lon, trucks_per_day_peak),
+        {
+          type: 'Feature',
+          properties: { label: `CONSTRUCTION TRUCKS: ${Math.round(trucks_per_day_peak)}/DAY`, kind: 'site' },
+          geometry: { type: 'Point', coordinates: [context.site_lat_lon[1], context.site_lat_lon[0]] }
+        }
+      ],
       paint_key: 'air',
     },
   };
@@ -170,7 +177,14 @@ export function projectPower(geometry, program, context) {
     ],
     spatial: {
       type: 'flow',
-      features: generateFeederFlowFeatures(context.site_lat_lon, [-73.9997, 40.7498], peak_MW),
+      features: [
+        ...generateFeederFlowFeatures(context.site_lat_lon, [-73.9997, 40.7498], peak_MW),
+        {
+          type: 'Feature',
+          properties: { label: `PEAK LOAD: ${peak_MW.toFixed(2)} MW`, kind: 'station' },
+          geometry: { type: 'Point', coordinates: [-73.9997, 40.7498] }
+        }
+      ],
       paint_key: 'power',
     },
   };
@@ -196,7 +210,14 @@ export function projectPedestrian(geometry, program, context) {
     ],
     spatial: {
       type: 'flow',
-      features: generatePedFlowFeatures(context.site_lat_lon, peak_hr),
+      features: [
+        ...generatePedFlowFeatures(context.site_lat_lon, peak_hr),
+        {
+          type: 'Feature',
+          properties: { label: `PEAK PEDESTRIANS: ${Math.round(peak_hr)}/HR`, kind: 'hub' },
+          geometry: { type: 'Point', coordinates: [context.site_lat_lon[1], context.site_lat_lon[0]] }
+        }
+      ],
       paint_key: 'pedestrian',
     },
   };
@@ -223,10 +244,17 @@ export function projectRent(geometry, program, context) {
     })),
     spatial: {
       type: 'rings',
-      features: generateRingFeatures(context.site_lat_lon,
-        COEFFICIENTS.ANCHOR_RENT_UPLIFT.map(b => ({
-          radius_m: b.radius_m, value: b.pct * scale_factor,
-        }))),
+      features: [
+        ...generateRingFeatures(context.site_lat_lon,
+          COEFFICIENTS.ANCHOR_RENT_UPLIFT.map(b => ({
+            radius_m: b.radius_m, value: b.pct * scale_factor,
+          }))),
+        ...COEFFICIENTS.ANCHOR_RENT_UPLIFT.slice(0, 2).map(b => ({
+          type: 'Feature',
+          properties: { label: `UPLIFT: +${(b.pct * 100 * scale_factor).toFixed(0)}%`, radius: b.radius_m },
+          geometry: { type: 'Point', coordinates: [context.site_lat_lon[1], context.site_lat_lon[0] + (b.radius_m / 111320)] }
+        }))
+      ],
       paint_key: 'rent',
     },
   };
@@ -254,7 +282,7 @@ export function projectDisplacement(geometry, program, context) {
     ],
     spatial: {
       type: 'choropleth',
-      features: [], // filled by data-loader when ACS GeoJSON is present
+      features: context.baseline?.tracts?.features || [],
       paint_key: 'displacement',
     },
   };
@@ -279,7 +307,7 @@ export function projectInduced(geometry, program, context) {
       { label: 'Hotel / hospitality', baseline: '—', projected: `+${Math.round(new_storefronts * 0.1)}`, delta: 'est.', sign:'pos' },
     ],
     spatial: {
-      type: 'points',
+      type: 'symbol',
       features: generateInducedPoints(context.site_lat_lon, new_storefronts),
       paint_key: 'induced',
     },
@@ -306,8 +334,15 @@ export function projectTransit(geometry, program, context) {
       { label: 'Citi Bike trips',                baseline: '11,400', projected: (11400 + Math.round(daily_entries*0.15)).toLocaleString(), delta:`+${Math.round(daily_entries*0.15)}`, sign:'neu' },
     ],
     spatial: {
-      type: 'points',
-      features: [],  // to be populated by transit layer from GTFS lookup
+      type: 'symbol',
+      features: context.baseline?.subway?.features?.filter(f => {
+        const [lon, lat] = f.geometry.coordinates;
+        const d = Math.sqrt((lat - context.site_lat_lon[0])**2 + (lon - context.site_lat_lon[1])**2);
+        return d < 0.015;
+      }).map(f => ({
+        ...f,
+        properties: { ...f.properties, label: f.properties.station_name, value: 1 }
+      })) || [],
       paint_key: 'transit',
     },
   };
@@ -341,7 +376,14 @@ export function projectCost(geometry, program, context) {
     ],
     spatial: {
       type: 'rings',
-      features: generateRingFeatures(context.site_lat_lon, [{ radius_m: 80, value: 1 }]),
+      features: [
+        ...generateRingFeatures(context.site_lat_lon, [{ radius_m: 80, value: 1 }]),
+        {
+          type: 'Feature',
+          properties: { label: `CAPITAL: $${(total_cost/1e6).toFixed(0)}M` },
+          geometry: { type: 'Point', coordinates: [context.site_lat_lon[1], context.site_lat_lon[0]] }
+        }
+      ],
       paint_key: 'cost',
     },
   };
@@ -368,7 +410,15 @@ export function projectWater(geometry, program, context) {
     ],
     spatial: {
       type: 'flow',
-      features: [],  // populated when CSO outfall GeoJSON is loaded
+      features: context.baseline?.cso?.features?.filter(f => {
+        const [lon, lat] = f.geometry.coordinates;
+        const d = Math.sqrt((lat - context.site_lat_lon[0])**2 + (lon - context.site_lat_lon[1])**2);
+        return d < 0.02;
+      }).slice(0, 5).map(f => ({
+        type: 'Feature',
+        properties: { label: `CSO OUTFALL: ${f.properties.outfall_id}`, flow: true },
+        geometry: { type: 'LineString', coordinates: [[context.site_lat_lon[1], context.site_lat_lon[0]], f.geometry.coordinates] }
+      })) || [],
       paint_key: 'water',
     },
   };
@@ -395,11 +445,18 @@ export function projectWaste(geometry, program, context) {
     ],
     spatial: {
       type: 'rings',
-      features: generateRingFeatures(context.site_lat_lon, [
-        { radius_m:  90, value: 78 },
-        { radius_m: 140, value: 72 },
-        { radius_m: 200, value: 66 },
-      ]),
+      features: [
+        ...generateRingFeatures(context.site_lat_lon, [
+          { radius_m:  90, value: 78 },
+          { radius_m: 140, value: 72 },
+          { radius_m: 200, value: 66 },
+        ]),
+        {
+          type: 'Feature',
+          properties: { label: `NOISE: +${dB_delta.toFixed(1)} dB` },
+          geometry: { type: 'Point', coordinates: [context.site_lat_lon[1], context.site_lat_lon[0]] }
+        }
+      ],
       paint_key: 'waste',
     },
   };
@@ -469,9 +526,13 @@ function generateInducedPoints(siteLatLon, count) {
   for (let i = 0; i < count; i++) {
     const d = 0.001 + Math.random() * 0.004;
     const t = Math.random() * Math.PI * 2;
+    const kind = ['fb','retail','hotel'][Math.floor(Math.random()*3)];
     pts.push({
       type: 'Feature',
-      properties: { kind: ['fb','retail','hotel'][Math.floor(Math.random()*3)] },
+      properties: { 
+        kind,
+        label: kind === 'fb' ? 'F&B OPPORTUNITY' : kind === 'retail' ? 'RETAIL OPPORTUNITY' : 'HOTEL OPPORTUNITY'
+      },
       geometry: { type: 'Point', coordinates: [lon + d*Math.cos(t), lat + d*Math.sin(t)] },
     });
   }

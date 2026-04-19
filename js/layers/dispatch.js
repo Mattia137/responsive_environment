@@ -25,10 +25,11 @@ export function renderActiveLayers(state) {
 
     switch (type) {
       case 'heatmap':    addHeatmapLayer(layerId, srcId);    break;
-      case 'flow':       addFlowLayer(layerId, srcId);       break;
+      case 'flow':       addFlowLayer(layerId, srcId, layerId === 'water');       break;
       case 'points':     addPointsLayer(layerId, srcId);     break;
       case 'choropleth': addChoroplethLayer(layerId, srcId); break;
       case 'rings':      addRingsLayer(layerId, srcId);      break;
+      case 'symbol':     addSymbolLayer(layerId, srcId);     break;
     }
   });
 }
@@ -47,7 +48,7 @@ function addHeatmapLayer(layerId, srcId) {
     source: srcId,
     maxzoom: 22,
     paint: {
-      'heatmap-weight':    ['interpolate', ['linear'], ['get', 'weight'], 0, 0, 30, 1],
+      'heatmap-weight':    ['interpolate', ['linear'], ['coalesce', ['get', 'weight'], 1], 0, 0, 30, 1],
       'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 13, 1, 18, 3],
       'heatmap-radius':    ['interpolate', ['linear'], ['zoom'], 13, 20, 18, 80],
       'heatmap-opacity':   0.7,
@@ -62,16 +63,16 @@ function addHeatmapLayer(layerId, srcId) {
   });
 }
 
-function addFlowLayer(layerId, srcId) {
+function addFlowLayer(layerId, srcId, isWater = false) {
   ensureLayer({
     id: `allspark-${layerId}-line`,
     type: 'line',
     source: srcId,
     paint: {
-      'line-color': cssVar('--accent'),
-      'line-width': ['interpolate', ['linear'], ['zoom'], 12, 0.8, 18, 3],
+      'line-color':     isWater ? '#5b9bd5' : cssVar('--accent'),
+      'line-width':     ['interpolate', ['linear'], ['zoom'], 12, 1, 18, 4],
       'line-dasharray': [3, 2],
-      'line-opacity': 0.85,
+      'line-opacity':   0.85,
     },
   });
 }
@@ -82,11 +83,38 @@ function addPointsLayer(layerId, srcId) {
     type: 'circle',
     source: srcId,
     paint: {
-      'circle-radius':       ['interpolate', ['linear'], ['zoom'], 13, 2, 18, 5],
+      'circle-radius':       ['interpolate', ['linear'], ['zoom'], 13, 3, 18, 7],
       'circle-color':        cssVar('--accent'),
       'circle-stroke-color': cssVar('--ink'),
-      'circle-stroke-width': 0.5,
+      'circle-stroke-width': 1,
       'circle-opacity':      0.85,
+    },
+  });
+}
+
+function addSymbolLayer(layerId, srcId) {
+  // Dot first
+  addPointsLayer(layerId, srcId);
+
+  // Then Labels
+  ensureLayer({
+    id: `allspark-${layerId}-labels`,
+    type: 'symbol',
+    source: srcId,
+    layout: {
+      'text-field':      ['coalesce', ['get', 'label'], ['get', 'name'], ''],
+      'text-font':       ['Fragment Mono Regular'],
+      'text-size':       10,
+      'text-offset':     [0, 1.2],
+      'text-anchor':     'top',
+      'text-transform':  'uppercase',
+      'text-letter-spacing': 0.1,
+    },
+    paint: {
+      'text-color':      cssVar('--t1'),
+      'text-halo-color': cssVar('--bg'),
+      'text-halo-width': 1.5,
+      'text-opacity':    ['interpolate', ['linear'], ['zoom'], 14, 0, 15.5, 1],
     },
   });
 }
@@ -103,8 +131,8 @@ function addChoroplethLayer(layerId, srcId) {
         0.5, cssVar('--neutral'),
         1,   cssVar('--negative'),
       ],
-      'fill-opacity': 0.5,
-      'fill-outline-color': cssVar('--line-bright'),
+      'fill-opacity': 0.6,
+      'fill-outline-color': cssVar('--t5'),
     },
   });
 }
@@ -116,7 +144,7 @@ function addRingsLayer(layerId, srcId) {
     source: srcId,
     paint: {
       'fill-color': cssVar('--accent'),
-      'fill-opacity': ['interpolate', ['linear'], ['get','value'], 0, 0.05, 0.2, 0.22],
+      'fill-opacity': ['interpolate', ['linear'], ['get','value'], 0, 0.05, 0.2, 0.25],
     },
   });
   ensureLayer({
@@ -126,7 +154,7 @@ function addRingsLayer(layerId, srcId) {
     paint: {
       'line-color': cssVar('--accent'),
       'line-dasharray': [2, 3],
-      'line-width': 0.8,
+      'line-width': 1.5,
       'line-opacity': 0.7,
     },
   });

@@ -28,6 +28,10 @@ export function initMap(state) {
     bearing: CONFIG.DEFAULT_BEARING,
     antialias: true,
     hash: true,
+    navigationControl: false,
+    geolocateControl: false,
+    attributionControl: false,
+    logoControl: false,
   });
 
   map.on('load', () => {

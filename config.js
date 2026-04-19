@@ -27,5 +27,5 @@ export const CONFIG = {
   STUDY_RADIUS_M:  1200,                           // outer data-fetch bbox
 
   /* Default massing file — auto-loaded on startup */
-  DEFAULT_GLB: 'massing_ground.glb',
+  DEFAULT_GLB: 'site_building.glb',
 };
