@@ -31,7 +31,7 @@ export function initMap(state) {
   });
 
   map.on('load', () => {
-    add3DBuildings();
+    _applyThemeBaseStyling();
     wireCameraReadouts();
     _ready = true;
     _onReadyCallbacks.forEach(cb => cb());
@@ -50,29 +50,54 @@ export function setTheme(theme) {
   const customLayers = _snapshotCustomLayers();
   map.setStyle(styleUrl);
   map.once('styledata', () => {
-    add3DBuildings();
+    _applyThemeBaseStyling();
     _restoreCustomLayers(customLayers);
   });
 }
 
-/* --- 3D buildings from the MapTiler style (OSM extrusions) --- */
-function add3DBuildings() {
-  const layers = map.getStyle().layers || [];
-  const has3D = layers.some(l => l['source-layer'] === 'building' && l.type === 'fill-extrusion');
-  if (has3D) return;
-  map.addLayer({
-    id: 'buildings-3d-fallback',
-    type: 'fill-extrusion',
-    source: 'openmaptiles',
-    'source-layer': 'building',
-    minzoom: 14,
-    paint: {
-      'fill-extrusion-color': ['interpolate', ['linear'], ['coalesce', ['get', 'render_height'], 10],
-        0, '#1a1a1a', 50, '#2a2a2a', 200, '#3a3a3a'],
-      'fill-extrusion-height': ['coalesce', ['get', 'render_height'], 10],
-      'fill-extrusion-base':   ['coalesce', ['get', 'render_min_height'], 0],
-      'fill-extrusion-opacity': 0.85,
-    },
+function _applyThemeBaseStyling() {
+  const mapStyle = map.getStyle();
+  if (!mapStyle || !mapStyle.layers) return;
+  
+  // 1. Strip all text/labels
+  mapStyle.layers.forEach(l => {
+    if (l.type === 'symbol') {
+      try { map.setLayoutProperty(l.id, 'visibility', 'none'); } catch (e) {}
+    }
+  });
+
+  // 2. Add 3D Extruded Buildings (if not present) with theme-aware colors
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  
+  const has3D = mapStyle.layers.some(l => l['source-layer'] === 'building' && l.type === 'fill-extrusion');
+  if (!has3D) {
+    const bColor = isLight ? '#eeeeee' : '#1a1a1a';
+    map.addLayer({
+      id: 'buildings-3d-fallback',
+      type: 'fill-extrusion',
+      source: 'openmaptiles',
+      'source-layer': 'building',
+      minzoom: 14,
+      paint: {
+        'fill-extrusion-color': bColor,
+        'fill-extrusion-height': ['coalesce', ['get', 'render_height'], 10],
+        'fill-extrusion-base':   ['coalesce', ['get', 'render_min_height'], 0],
+        'fill-extrusion-opacity': 0.85,
+      },
+    }, mapStyle.layers.find(l => l.type === 'symbol')?.id); // Attempt to insert under symbols if any remained
+  }
+
+  // 3. Force Black/White Base Maps
+  mapStyle.layers.forEach(l => {
+    if (l.type === 'fill' && l.id.includes('water')) {
+      try { map.setPaintProperty(l.id, 'fill-color', isLight ? '#e0e0e0' : '#000000'); } catch(e){}
+    }
+    if (l.type === 'fill' && l.id.includes('background')) {
+      try { map.setPaintProperty(l.id, 'fill-color', isLight ? '#ffffff' : '#121212'); } catch(e){}
+    }
+    if (l.type === 'line' && l.id.includes('road')) {
+      try { map.setPaintProperty(l.id, 'line-color', isLight ? '#cccccc' : '#222222'); } catch(e){}
+    }
   });
 }
 
