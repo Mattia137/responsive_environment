@@ -97,6 +97,15 @@ export const COEFFICIENTS = {
    ================================================================ */
 
 export function runImpactModel({ geometry, program, context }) {
+  // Use floor-sliced GFA when available (5 m floor height), fallback to program input
+  const effectiveGfa = geometry?.total_gfa ?? program.gfa_m2;
+  if (effectiveGfa && effectiveGfa !== program.gfa_m2) {
+    program = { ...program, gfa_m2: effectiveGfa };
+  }
+  // Use 5 m floor height for floor count
+  if (geometry && geometry.height_m) {
+    geometry = { ...geometry, num_floors_est: Math.max(1, Math.round(geometry.height_m / 5.0)) };
+  }
   const out = {};
   out.air           = projectAir(geometry, program, context);
   out.power         = projectPower(geometry, program, context);

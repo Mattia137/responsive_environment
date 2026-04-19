@@ -102,9 +102,11 @@ async function boot() {
         const btnClr = document.getElementById('btn-clear-glb');
         if (btnClr) btnClr.disabled = false;
         setDerived(geometry);
-        // Auto-fill GFA estimate
+        // Auto-fill GFA from floor-sliced geometry (5 m floors) or fallback estimate
         if (geometry) {
-          const gfa = Math.round(geometry.footprint_m2 * geometry.num_floors_est * 0.85);
+          const gfa = geometry.total_gfa
+            ? Math.round(geometry.total_gfa)
+            : Math.round(geometry.footprint_m2 * geometry.num_floors_est * 0.85);
           state.program.gfa_m2 = gfa;
           const gfaEl = document.getElementById('in-gfa');
           if (gfaEl) gfaEl.value = gfa;

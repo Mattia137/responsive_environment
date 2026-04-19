@@ -91,3 +91,6 @@ export function hideLayer() {
   removeLayer(`${PREFIX}-pts`);
   removeSource(`${PREFIX}-src`);
 }
+
+export const render = showLayer;
+export const clear  = hideLayer;

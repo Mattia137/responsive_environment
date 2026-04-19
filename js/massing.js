@@ -156,8 +156,10 @@ export function getMassingTransform() {
   return { ..._userTransform };
 }
 
-/* Compute footprint_m2, height_m, volume_m3 from the loaded mesh */
-export function extractGeometry() {
+/* Compute footprint_m2, height_m, volume_m3 and per-floor areas from the loaded mesh.
+   Uses 5 m floor height per user spec — slices the mesh every 5 m and estimates
+   each floor's area from the convex hull of vertices in that band. */
+export function extractGeometry(floorHeight = 5.0) {
   if (!_model || !_modelBBox) return null;
   const size = new THREE.Vector3();
   _modelBBox.getSize(size);
@@ -165,25 +167,53 @@ export function extractGeometry() {
   const depth_m  = size.z;
   const height_m = size.y;
 
-  // Footprint: project all vertices to XZ plane, take convex hull area.
-  const pts = [];
+  // Collect all vertex positions (sampled for perf)
+  const allPts = [];
   _model.traverse(child => {
     if (child.isMesh && child.geometry) {
-      const pos = child.geometry.attributes.position;
-      const step = Math.max(1, Math.floor(pos.count / 2000));
+      const pos  = child.geometry.attributes.position;
+      const step = Math.max(1, Math.floor(pos.count / 4000));
       for (let i = 0; i < pos.count; i += step) {
         const v = new THREE.Vector3().fromBufferAttribute(pos, i);
         v.applyMatrix4(child.matrixWorld);
-        pts.push([v.x, v.z]);
+        allPts.push(v);
       }
     }
   });
-  const hull = convexHull2D(pts);
+
+  // Global footprint (ground plane projection)
+  const footprintPts = allPts.map(v => [v.x, v.z]);
+  const hull         = convexHull2D(footprintPts);
   const footprint_m2 = polygonArea(hull);
   const volume_m3    = footprint_m2 * height_m;
-  const num_floors_est = Math.max(1, Math.round(height_m / 4.0));
 
-  return { footprint_m2, height_m, volume_m3, num_floors_est, width_m, depth_m };
+  // Per-floor area via horizontal band sampling (5 m slices)
+  const numFloors = Math.max(1, Math.round(height_m / floorHeight));
+  const yMin = _modelBBox.min.y;
+  const floor_areas = [];
+  for (let f = 0; f < numFloors; f++) {
+    const lo = yMin + f * floorHeight;
+    const hi = lo + floorHeight;
+    const band = allPts.filter(v => v.y >= lo && v.y < hi).map(v => [v.x, v.z]);
+    let area;
+    if (band.length >= 3) {
+      const h = convexHull2D(band);
+      area = polygonArea(h) * 0.85;  // 0.85 efficiency factor
+    } else {
+      area = footprint_m2 * 0.85;    // fallback: assume same footprint
+    }
+    floor_areas.push({ floor: f + 1, elevation_m: lo, area_m2: Math.round(area) });
+  }
+  const total_gfa = floor_areas.reduce((s, f) => s + f.area_m2, 0);
+
+  return {
+    footprint_m2, height_m, volume_m3,
+    num_floors_est: numFloors,
+    width_m, depth_m,
+    floor_height_m: floorHeight,
+    floor_areas,          // per-floor breakdown
+    total_gfa,            // sum of all floor areas × 0.85 efficiency
+  };
 }
 
 /* Re-attach three.js layer after a MapTiler style reload (style swap removes all layers) */

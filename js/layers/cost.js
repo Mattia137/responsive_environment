@@ -49,3 +49,7 @@ export function hideLayer() {
   removeLayer(`${PREFIX}-line`);
   removeSource(`${PREFIX}-src`);
 }
+
+/* dispatch.js calls render/clear */
+export const render = showLayer;
+export const clear  = hideLayer;

@@ -96,8 +96,10 @@ export async function handleFile(f) {
     const btnClr = document.getElementById('btn-clear-glb');
     if (btnClr) btnClr.disabled = false;
     setDerived(geometry);
-    // auto-fill GFA estimate
-    const gfa = Math.round(geometry.footprint_m2 * geometry.num_floors_est * 0.85);
+    // Use floor-sliced GFA (5 m floors) when available
+    const gfa = geometry.total_gfa
+      ? Math.round(geometry.total_gfa)
+      : Math.round(geometry.footprint_m2 * geometry.num_floors_est * 0.85);
     const gfaEl = document.getElementById('in-gfa');
     if (gfaEl) gfaEl.value = gfa;
     return { geometry, gfa };
@@ -117,5 +119,7 @@ export function setDerived(geometry) {
   if (fp) fp.textContent = fmt(geometry?.footprint_m2, 'm²');
   if (ht) ht.textContent = fmt(geometry?.height_m, 'm');
   if (vo) vo.textContent = fmt(geometry?.volume_m3, 'm³');
-  if (fl) fl.textContent = geometry?.num_floors_est ?? '—';
+  // Show floor-sliced GFA next to floors count
+  const gfaSliced = geometry?.total_gfa ? ` · ${Math.round(geometry.total_gfa).toLocaleString()} m² GFA` : '';
+  if (fl) fl.textContent = geometry?.num_floors_est ? `${geometry.num_floors_est}${gfaSliced}` : '—';
 }
