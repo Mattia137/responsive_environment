@@ -116,8 +116,10 @@ export async function loadGLB(fileOrUrl) {
       if (_model) _scene.remove(_model);
       _model = gltf.scene;
 
-      // Traverse meshes for shadow support
+      // Traverse meshes for shadow support and matrix locking (exact match to 2GBX)
       _model.traverse(child => {
+        child.matrixAutoUpdate = false;
+        child.updateMatrixWorld();
         if (child.isMesh) {
           child.castShadow = true;
           child.receiveShadow = true;
