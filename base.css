@@ -131,3 +131,6 @@ body.theme-transitioning,
 body.theme-transitioning * {
   transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease !important;
 }
+
+/* --- HIDE MAPTILER LOGO --- */
+.maplibregl-ctrl-logo, .maptiler-logo, .maplibregl-ctrl-attrib { display: none !important; }

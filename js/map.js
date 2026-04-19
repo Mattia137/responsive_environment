@@ -12,7 +12,7 @@ let _ready = false;
 const getMapStyle = (theme) => {
   const key = CONFIG.MAPTILER_KEY;
   return theme === 'light' 
-    ? `https://api.maptiler.com/maps/dataviz-light/style.json?key=${key}`
+    ? `https://api.maptiler.com/maps/streets-v2-light/style.json?key=${key}`
     : `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${key}`;
 };
 
