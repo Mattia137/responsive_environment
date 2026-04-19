@@ -1,0 +1,133 @@
+/* ========================================================================
+   ALLSPARK // IMPACT  ·  base.css
+   Resets, typography, and theme variables (dark + light)
+   ======================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: 'Fragment Mono', ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--bg);
+  color: var(--ink);
+  overflow: hidden;
+}
+
+/* --- Serif for big numbers in readouts --- */
+.serif { font-family: 'Instrument Serif', Georgia, serif; }
+
+/* --------------------------------------------------------------
+   DARK THEME  (default)
+   -------------------------------------------------------------- */
+:root,
+html[data-theme="dark"] {
+  --bg:              #0a0a0a;
+  --bg-2:            #111111;
+  --bg-3:            #161616;
+  --bg-panel:        #0a0a0a;
+  --ink:             #f0eee6;
+  --ink-dim:         #8a877f;
+  --ink-faint:       #4a4742;
+  --line:            #1f1e1b;
+  --line-bright:     #2d2b27;
+  --accent:          #ff5a1f;
+  --accent-dim:      #8a3110;
+  --accent-glow:     rgba(255, 90, 31, 0.15);
+  --positive:        #7fb069;
+  --negative:        #e06c75;
+  --neutral:         #d4a857;
+
+  /* Map style URL (applied dynamically in js/map.js) */
+  --map-style: "streets-v2-dark";
+
+  /* Overlay colors for MapLibre paint props */
+  --map-fill:         #1c1c1c;
+  --map-stroke:       #2a2a2a;
+  --map-point:        #f0eee6;
+  --map-point-accent: #ff5a1f;
+
+  --shadow-1: 0 1px 2px rgba(0,0,0,0.5);
+  --shadow-2: 0 4px 16px rgba(0,0,0,0.6);
+}
+
+/* --------------------------------------------------------------
+   LIGHT THEME
+   -------------------------------------------------------------- */
+html[data-theme="light"] {
+  --bg:              #f6f3ec;
+  --bg-2:            #edeae2;
+  --bg-3:            #e4e0d6;
+  --bg-panel:        #f6f3ec;
+  --ink:             #121110;
+  --ink-dim:         #5a574f;
+  --ink-faint:       #9a968c;
+  --line:            #dcd7cc;
+  --line-bright:     #c9c3b4;
+  --accent:          #c73e00;
+  --accent-dim:      #f0aa86;
+  --accent-glow:     rgba(199, 62, 0, 0.10);
+  --positive:        #4a7a3a;
+  --negative:        #a84040;
+  --neutral:         #8a6820;
+
+  --map-style: "streets-v2-light";
+
+  --map-fill:         #e4e0d6;
+  --map-stroke:       #c9c3b4;
+  --map-point:        #121110;
+  --map-point-accent: #c73e00;
+
+  --shadow-1: 0 1px 2px rgba(30,25,20,0.06);
+  --shadow-2: 0 4px 16px rgba(30,25,20,0.10);
+}
+
+/* --------------------------------------------------------------
+   Common typography utilities
+   -------------------------------------------------------------- */
+
+.label-xs {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+.label-sm {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+.mono { font-family: 'Fragment Mono', monospace; font-feature-settings: "tnum"; }
+
+.tag-accent { color: var(--accent); }
+.sign-pos   { color: var(--positive); }
+.sign-neg   { color: var(--negative); }
+.sign-neu   { color: var(--neutral); }
+
+input, select, button, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--line-bright);
+  padding: 4px 6px;
+}
+input:focus, select:focus, button:focus { outline: 1px solid var(--accent); outline-offset: 1px; }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line-bright); }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-faint); }
+
+/* --------------------------------------------------------------
+   Theme transition — only when user clicks the toggle
+   (a class is added to body briefly to enable smooth crossfade)
+   -------------------------------------------------------------- */
+body.theme-transitioning,
+body.theme-transitioning * {
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease !important;
+}

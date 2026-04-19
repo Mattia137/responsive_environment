@@ -1,0 +1,204 @@
+{
+  "datasets": [
+    {
+      "id": "airnow",
+      "name": "EPA AirNow",
+      "layer": "air",
+      "endpoint": "https://www.airnowapi.org/aq/observation/latLong/current/",
+      "format": "JSON",
+      "fields": ["ParameterName", "AQI", "Category", "Latitude", "Longitude"],
+      "auth": "API key (free)",
+      "auth_url": "https://docs.airnowapi.org/account/request/",
+      "refresh": "hourly",
+      "notes": "PM2.5, O3, NO2 from nearest monitoring stations"
+    },
+    {
+      "id": "nyccas",
+      "name": "NYC DOHMH NYCCAS",
+      "layer": "air",
+      "endpoint": "https://data.cityofnewyork.us/resource/c3uy-2p5r.geojson",
+      "format": "GeoJSON",
+      "fields": ["fine_particulate_matter", "nitrogen_dioxide", "ozone"],
+      "auth": "none",
+      "refresh": "annual",
+      "notes": "Community Air Survey tract-level annual means"
+    },
+    {
+      "id": "ll84",
+      "name": "NYC LL84 Energy Benchmarking",
+      "layer": "power",
+      "endpoint": "https://data.cityofnewyork.us/resource/28fi-3us3.json",
+      "format": "JSON",
+      "fields": ["bbl_10_digits", "site_eui_kbtu_ft", "weather_normalized_source_eui_kbtu_ft"],
+      "auth": "none",
+      "refresh": "annual",
+      "notes": "Mandatory energy disclosure for buildings >25,000 sf"
+    },
+    {
+      "id": "pedestrian_counts",
+      "name": "NYC DOT Pedestrian Volumes",
+      "layer": "pedestrian",
+      "endpoint": "https://data.cityofnewyork.us/resource/6fi9-q3ta.json",
+      "format": "JSON",
+      "fields": ["from_street", "to_street", "pedestrians"],
+      "auth": "none",
+      "refresh": "biannual",
+      "notes": "Biannual counts at ~100 locations"
+    },
+    {
+      "id": "mta_ridership",
+      "name": "MTA Subway Daily Ridership",
+      "layer": ["pedestrian", "transit"],
+      "endpoint": "https://data.ny.gov/resource/i9wp-a4ja.geojson",
+      "format": "GeoJSON",
+      "fields": ["station_name", "daytime_routes", "the_geom"],
+      "auth": "none",
+      "refresh": "quarterly",
+      "notes": "Station lat/lon from GTFS; ridership from turnstile data"
+    },
+    {
+      "id": "mappluto",
+      "name": "MapPLUTO",
+      "layer": "rent",
+      "endpoint": "https://data.cityofnewyork.us/resource/64uk-42ks.json",
+      "format": "JSON",
+      "fields": ["bbl", "assesstot", "assessland", "yearbuilt", "landuse", "unitsres"],
+      "auth": "none",
+      "refresh": "quarterly",
+      "notes": "Authoritative tax lot polygons with assessed values"
+    },
+    {
+      "id": "dof_sales",
+      "name": "NYC DOF Rolling Sales",
+      "layer": "rent",
+      "endpoint": "https://data.cityofnewyork.us/resource/usep-8jbt.json",
+      "format": "JSON",
+      "fields": ["borough", "block", "lot", "sale_price", "sale_date"],
+      "auth": "none",
+      "refresh": "monthly",
+      "notes": "Property sales used for comparable analysis"
+    },
+    {
+      "id": "streeteasy",
+      "name": "StreetEasy ZORI",
+      "layer": "rent",
+      "endpoint": "manual download — ZIP-level monthly CSV",
+      "format": "CSV",
+      "fields": ["zip", "median_rent"],
+      "auth": "none (public)",
+      "refresh": "monthly",
+      "notes": "Zillow Observed Rent Index by ZIP"
+    },
+    {
+      "id": "acs",
+      "name": "ACS 5-Year Census",
+      "layer": "displacement",
+      "endpoint": "https://api.census.gov/data/2022/acs/acs5",
+      "format": "JSON",
+      "fields": ["B19013_001E", "B25070_010E", "B03002_001E"],
+      "auth": "API key (free)",
+      "auth_url": "https://api.census.gov/data/key_signup.html",
+      "refresh": "annual",
+      "notes": "Income, rent burden, tenure, race by tract"
+    },
+    {
+      "id": "hpd_evictions",
+      "name": "HPD Eviction Filings",
+      "layer": "displacement",
+      "endpoint": "https://data.cityofnewyork.us/resource/6z8x-wfk4.json",
+      "format": "JSON",
+      "fields": ["address", "latitude", "longitude", "eviction_postcode"],
+      "auth": "none",
+      "refresh": "monthly",
+      "notes": "Geocoded eviction filings — point data"
+    },
+    {
+      "id": "storefront_tracker",
+      "name": "DCP Storefront Tracker",
+      "layer": "induced",
+      "endpoint": "https://data.cityofnewyork.us/resource/92iy-9c3n.json",
+      "format": "JSON",
+      "fields": ["bbl", "status", "ground_floor_use"],
+      "auth": "none",
+      "refresh": "quarterly",
+      "notes": "Vacant storefronts for potential induced demand"
+    },
+    {
+      "id": "biz_registrations",
+      "name": "NYC DOF Business Registrations",
+      "layer": "induced",
+      "endpoint": "https://data.cityofnewyork.us/resource/p2mh-mrfv.json",
+      "format": "JSON",
+      "fields": ["business_name", "industry", "address_zip"],
+      "auth": "none",
+      "refresh": "monthly",
+      "notes": "New business registrations for F&B/retail density"
+    },
+    {
+      "id": "citibike",
+      "name": "Citi Bike System Data",
+      "layer": "transit",
+      "endpoint": "https://gbfs.citibikenyc.com/gbfs/en/station_information.json",
+      "format": "JSON (GBFS)",
+      "fields": ["station_id", "name", "lat", "lon", "capacity"],
+      "auth": "none",
+      "refresh": "realtime",
+      "notes": "Station locations + trip counts"
+    },
+    {
+      "id": "dob_jobs",
+      "name": "NYC DOB Job Filings",
+      "layer": "cost",
+      "endpoint": "https://data.cityofnewyork.us/resource/ic3t-wcy2.json",
+      "format": "JSON",
+      "fields": ["bbl", "job_type", "initial_cost", "total_est_fee"],
+      "auth": "none",
+      "refresh": "weekly",
+      "notes": "Comparable project costs by use class"
+    },
+    {
+      "id": "cso_outfalls",
+      "name": "NYC DEP CSO Outfalls",
+      "layer": "water",
+      "endpoint": "https://data.cityofnewyork.us/resource/c4m9-hkbf.geojson",
+      "format": "GeoJSON",
+      "fields": ["outfall_id", "waterbody", "the_geom"],
+      "auth": "none",
+      "refresh": "annual",
+      "notes": "Combined Sewer Overflow outfall points"
+    },
+    {
+      "id": "waste_zones",
+      "name": "NYC DSNY Commercial Waste Zones",
+      "layer": "waste",
+      "endpoint": "https://data.cityofnewyork.us/resource/rqhf-mkfe.geojson",
+      "format": "GeoJSON",
+      "fields": ["zone_name", "hauler", "the_geom"],
+      "auth": "none",
+      "refresh": "annual",
+      "notes": "Commercial waste zone polygons"
+    },
+    {
+      "id": "noise_311",
+      "name": "NYC 311 Noise Complaints",
+      "layer": "waste",
+      "endpoint": "https://data.cityofnewyork.us/resource/fhrw-4uyv.json",
+      "format": "JSON",
+      "fields": ["complaint_type", "latitude", "longitude", "created_date"],
+      "auth": "none",
+      "refresh": "daily",
+      "notes": "Geocoded noise complaints for ambient dB estimation"
+    },
+    {
+      "id": "census_tracts",
+      "name": "NYC Census Tracts (Manhattan)",
+      "layer": "displacement",
+      "endpoint": "https://data.cityofnewyork.us/resource/63ge-mke6.geojson",
+      "format": "GeoJSON",
+      "fields": ["boro_name", "ct2020", "the_geom"],
+      "auth": "none",
+      "refresh": "decennial",
+      "notes": "Tract polygon geometries for choropleth joins"
+    }
+  ]
+}

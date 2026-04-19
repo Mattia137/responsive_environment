@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ALLSPARK // IMPACT</title>
+
+  <!-- Fragment Mono + Instrument Serif (for readout big numbers) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fragment+Mono:ital@0;1&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+
+  <!-- MapTiler GL JS -->
+  <link href="https://cdn.maptiler.com/maptiler-sdk-js/v2.5.2/maptiler-sdk.css" rel="stylesheet" />
+  <script src="https://cdn.maptiler.com/maptiler-sdk-js/v2.5.2/maptiler-sdk.umd.min.js"></script>
+
+  <!-- three.js (for GLB massing custom layer) -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
+
+  <!-- proj4 (for NY State Plane reprojection) -->
+  <script src="https://cdn.jsdelivr.net/npm/proj4@2.10.0/dist/proj4.min.js"></script>
+
+  <!-- turf (for geospatial ops) -->
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/components.css" />
+</head>
+<body>
+
+  <!-- ============================== HEADER ============================== -->
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-mark">ALLSPARK</span>
+      <span class="brand-slash">//</span>
+      <span class="brand-word">IMPACT</span>
+      <span class="brand-sub">parametric urban impact projection</span>
+    </div>
+
+    <div class="state-toggle" role="group" aria-label="Scenario state">
+      <button id="btn-before" class="state-btn active" data-state="before">BEFORE</button>
+      <button id="btn-after"  class="state-btn"        data-state="after">AFTER</button>
+    </div>
+
+    <div class="header-meta">
+      <span class="meta-item"><span class="pulse-dot"></span>LIVE</span>
+      <span class="meta-item">SCENARIO <strong id="scenario-tag">BASELINE</strong></span>
+      <span class="meta-item"><span id="local-time">--:--:--</span></span>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle light/dark theme">
+        <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+        </svg>
+        <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============================== LEFT: LAYERS ============================== -->
+  <aside class="panel panel-left" id="layers-panel" aria-label="Impact layers">
+    <div class="panel-section">
+      <div class="panel-section-head">
+        <span>IMPACT LAYERS</span>
+        <span class="count" id="layers-count">0 / 10</span>
+      </div>
+      <div class="layer-list" id="layer-list">
+        <!-- Rendered by js/ui/panel-layers.js — one .layer row per item in LAYERS -->
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============================== MAIN: MAP ============================== -->
+  <main class="panel panel-main">
+    <div id="map"></div>
+
+    <!-- Floating map overlays -->
+    <div class="stage-overlay stage-overlay-tl">
+      <div>SITE <strong id="site-coords">40.7536 / -74.0027</strong></div>
+      <div>MODE <strong id="mode-tag">CONTEXT</strong></div>
+    </div>
+    <div class="stage-overlay stage-overlay-tr">
+      <div>ACTIVE <span id="active-layer-tag" class="tag-accent">— NONE —</span></div>
+      <div>RADIUS <strong><span id="radius-readout">400</span> m</strong></div>
+    </div>
+    <div class="stage-overlay stage-overlay-bl">
+      <div>ZOOM <span id="zoom-readout">15.8</span></div>
+      <div>PITCH <span id="pitch-readout">55°</span></div>
+      <div>BEARING <span id="bearing-readout">-18°</span></div>
+    </div>
+    <div class="stage-overlay stage-overlay-br">
+      <div>EPSG <strong>4326 / 3857</strong></div>
+      <div>REF EPSG <strong>2263</strong></div>
+    </div>
+
+    <!-- Massing drop zone (appears when empty) -->
+    <div class="drop-zone" id="drop-zone">
+      <div class="drop-zone-inner">
+        <div class="drop-zone-title">DROP GLB MASSING FILE</div>
+        <div class="drop-zone-sub">or click to browse · .glb / .gltf</div>
+        <input type="file" id="glb-input" accept=".glb,.gltf" hidden />
+      </div>
+    </div>
+  </main>
+
+  <!-- ============================== RIGHT: CONTROLS + READOUTS ============================== -->
+  <aside class="panel panel-right" id="right-panel" aria-label="Massing and readouts">
+
+    <!-- (a) MASSING CONTROLS -->
+    <section class="right-section" id="massing-controls">
+      <div class="panel-section-head">
+        <span>MASSING MODEL</span>
+        <span id="massing-status" class="count">NOT LOADED</span>
+      </div>
+      <div class="control-block">
+        <button id="btn-load-glb" class="btn-primary">LOAD GLB</button>
+        <button id="btn-clear-glb" class="btn-secondary" disabled>CLEAR</button>
+      </div>
+      <div class="control-grid">
+        <label>ANCHOR LAT <input type="number" id="in-lat"  step="0.00001" value="40.75380"/></label>
+        <label>ANCHOR LON <input type="number" id="in-lon"  step="0.00001" value="-74.00630"/></label>
+        <label>ROTATION °  <input type="range"  id="in-rot" min="0" max="360" step="1" value="0"/><span id="v-rot">0°</span></label>
+        <label>Z OFFSET m  <input type="number" id="in-z"   step="0.5" value="0"/></label>
+        <label>SCALE       <input type="number" id="in-scale" step="0.01" value="1"/></label>
+      </div>
+      <div class="derived-block">
+        <div class="derived-row"><span>FOOTPRINT</span><strong id="out-footprint">— m²</strong></div>
+        <div class="derived-row"><span>HEIGHT</span><strong id="out-height">— m</strong></div>
+        <div class="derived-row"><span>VOLUME</span><strong id="out-volume">— m³</strong></div>
+        <div class="derived-row"><span>FLOORS (est)</span><strong id="out-floors">—</strong></div>
+      </div>
+    </section>
+
+    <!-- (b) PROGRAM SPEC -->
+    <section class="right-section" id="program-spec">
+      <div class="panel-section-head"><span>PROGRAM SPEC</span></div>
+      <div class="control-grid">
+        <label>TYPE
+          <select id="in-program">
+            <option value="museum_art">Museum · Art</option>
+            <option value="museum_science">Museum · Science</option>
+            <option value="museum_media" selected>Museum · Media / Digital</option>
+            <option value="office">Office</option>
+            <option value="residential">Residential</option>
+            <option value="hotel">Hotel</option>
+            <option value="retail">Retail</option>
+            <option value="education">Education</option>
+            <option value="lab">Lab / Research</option>
+          </select>
+        </label>
+        <label>GFA m²      <input type="number" id="in-gfa"    step="100"  value="13750"/></label>
+        <label>HOURS/WEEK  <input type="number" id="in-hours"  step="1"    value="60"/></label>
+        <label>ADMISSION $ <input type="number" id="in-price"  step="1"    value="28"/></label>
+        <label>STAFF       <input type="number" id="in-staff"  step="1"    value="120"/></label>
+      </div>
+    </section>
+
+    <!-- (c) READOUTS -->
+    <section class="right-section" id="readouts">
+      <div class="panel-section-head"><span>READOUTS</span><span class="count" id="readout-context">OVERVIEW</span></div>
+      <div id="readout-body">
+        <!-- Rendered by js/ui/panel-readouts.js -->
+      </div>
+    </section>
+
+  </aside>
+
+  <!-- ============================== FOOTER ============================== -->
+  <footer class="app-footer">
+    <div class="marquee-track" id="marquee-track"></div>
+  </footer>
+
+  <!-- ============================== SCRIPTS ============================== -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
