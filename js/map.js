@@ -11,9 +11,10 @@ let _ready = false;
 
 const getMapStyle = (theme) => {
   const key = CONFIG.MAPTILER_KEY;
+  // Using dataviz styles as they are designed for monochrome overlays
   return theme === 'light' 
-    ? `https://api.maptiler.com/maps/streets-v2-light/style.json?key=${key}`
-    : `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${key}`;
+    ? `https://api.maptiler.com/maps/dataviz-light/style.json?key=${key}`
+    : `https://api.maptiler.com/maps/dataviz-dark/style.json?key=${key}`;
 };
 
 export function initMap(state) {
@@ -28,10 +29,12 @@ export function initMap(state) {
     bearing: CONFIG.DEFAULT_BEARING,
     antialias: true,
     hash: true,
+    // Aggressively disable all branding and controls
     navigationControl: false,
     geolocateControl: false,
     attributionControl: false,
     logoControl: false,
+    maptilerLogo: false,
   });
 
   map.on('load', () => {
@@ -63,19 +66,45 @@ function _applyThemeBaseStyling() {
   const mapStyle = map.getStyle();
   if (!mapStyle || !mapStyle.layers) return;
   
-  // 1. Strip all text/labels
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  
+  // Aggressive looping to strip all color and text
   mapStyle.layers.forEach(l => {
-    if (l.type === 'symbol') {
+    // 1. Kill labels
+    if (l.type === 'symbol' || l.id.includes('label') || l.id.includes('place')) {
       try { map.setLayoutProperty(l.id, 'visibility', 'none'); } catch (e) {}
+    }
+
+    // 2. Force monochrome colors for everything else
+    // We target common color properties used in MapLibre/MapTiler styles
+    const type = l.type;
+    if (type === 'fill' || type === 'fill-extrusion' || type === 'line' || type === 'background') {
+      const paintProps = [
+        'fill-color', 'fill-extrusion-color', 'line-color', 'background-color',
+        'fill-outline-color', 'line-outline-color'
+      ];
+      
+      paintProps.forEach(prop => {
+        try {
+          if (map.getPaintProperty(l.id, prop)) {
+             // Force to grayscale: Water is black/white, Land is gray
+             if (l.id.includes('water')) {
+               map.setPaintProperty(l.id, prop, isLight ? '#eeeeee' : '#000000');
+             } else if (l.id.includes('building')) {
+               map.setPaintProperty(l.id, prop, isLight ? '#f5f5f5' : '#1a1a1a');
+             } else {
+               map.setPaintProperty(l.id, prop, isLight ? '#ffffff' : '#0a0a0a');
+             }
+          }
+        } catch(e){}
+      });
     }
   });
 
-  // 2. Add 3D Extruded Buildings (if not present) with theme-aware colors
-  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-  
+  // 3. Ensure 3D Buildngs are present and desaturated
   const has3D = mapStyle.layers.some(l => l['source-layer'] === 'building' && l.type === 'fill-extrusion');
   if (!has3D) {
-    const bColor = isLight ? '#eeeeee' : '#1a1a1a';
+    const bColor = isLight ? '#f0f0f0' : '#141414';
     map.addLayer({
       id: 'buildings-3d-fallback',
       type: 'fill-extrusion',
@@ -88,21 +117,8 @@ function _applyThemeBaseStyling() {
         'fill-extrusion-base':   ['coalesce', ['get', 'render_min_height'], 0],
         'fill-extrusion-opacity': 0.85,
       },
-    }, mapStyle.layers.find(l => l.type === 'symbol')?.id); // Attempt to insert under symbols if any remained
+    });
   }
-
-  // 3. Force Black/White Base Maps
-  mapStyle.layers.forEach(l => {
-    if (l.type === 'fill' && l.id.includes('water')) {
-      try { map.setPaintProperty(l.id, 'fill-color', isLight ? '#e0e0e0' : '#000000'); } catch(e){}
-    }
-    if (l.type === 'fill' && l.id.includes('background')) {
-      try { map.setPaintProperty(l.id, 'fill-color', isLight ? '#ffffff' : '#121212'); } catch(e){}
-    }
-    if (l.type === 'line' && l.id.includes('road')) {
-      try { map.setPaintProperty(l.id, 'line-color', isLight ? '#cccccc' : '#222222'); } catch(e){}
-    }
-  });
 }
 
 function wireCameraReadouts() {

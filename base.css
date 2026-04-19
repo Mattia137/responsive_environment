@@ -134,3 +134,6 @@ body.theme-transitioning * {
 
 /* --- HIDE MAPTILER LOGO --- */
 .maplibregl-ctrl-logo, .maptiler-logo, .maplibregl-ctrl-attrib { display: none !important; }
+
+/* --- AGGRESSIVE UI PURGE --- */
+.maplibregl-ctrl-logo, .maptiler-logo, .maplibregl-ctrl-attrib, .maplibregl-ctrl-bottom-right, .maplibregl-ctrl-bottom-left { display: none !important; opacity: 0 !important; pointer-events: none !important; }

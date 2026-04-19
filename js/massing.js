@@ -116,11 +116,14 @@ export async function loadGLB(fileOrUrl) {
       if (_model) _scene.remove(_model);
       _model = gltf.scene;
 
+      // Initialize bounding box (CRITICAL BUG FIX)
+      _modelBBox = new THREE.Box3().setFromObject(_model);
+
       // Traverse meshes for shadow support and matrix locking (exact match to 2GBX)
       _model.traverse(child => {
-        child.matrixAutoUpdate = false;
-        child.updateMatrixWorld();
         if (child.isMesh) {
+          child.updateMatrixWorld(true);
+          child.matrixAutoUpdate = false;
           child.castShadow = true;
           child.receiveShadow = true;
         }
@@ -131,7 +134,10 @@ export async function loadGLB(fileOrUrl) {
 
       const geometry = extractGeometry();
       resolve(geometry);
-    }, undefined, reject);
+    }, undefined, (err) => {
+      console.error('[massing] GLB load failed:', err);
+      reject(err);
+    });
   });
 }
 
