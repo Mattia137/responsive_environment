@@ -4,6 +4,7 @@
    ========================================================================= */
 
 import { LAYERS, LAYER_DETAILS } from '../layers/registry.js';
+import { provDot } from './prov.js';
 
 export function renderReadouts(state) {
   const host = document.getElementById('readout-body');
@@ -53,12 +54,14 @@ function summaryGrid(state) {
       const r = state.impactResults?.[L.id];
       const headline = r?.headline;
       const sign = headline ? `sign-${headline.sign}` : '';
+      const showValue = state.mode === 'after' && headline;
       return `
         <div class="metric-row">
           <span class="label">${L.name}</span>
           <span>
-            <span class="value">${state.mode === 'after' && headline ? headline.value : '—'}</span>
-            ${state.mode === 'after' && headline ? `<span class="delta ${sign}">${headline.unit || ''} ${headline.delta}</span>` : ''}
+            ${showValue ? provDot(headline.provenance) : ''}
+            <span class="value">${showValue ? headline.value : '—'}</span>
+            ${showValue ? `<span class="delta ${sign}">${headline.unit || ''} ${headline.delta}</span>` : ''}
           </span>
         </div>`;
     }).join('');
@@ -71,7 +74,7 @@ function headlineCard(id, result, mode) {
   const h = result.headline;
   el.innerHTML = `
     <div class="readout-card-title">${id.toUpperCase()} · HEADLINE</div>
-    <div class="big-number">${h.value}<span class="big-number-unit">${h.unit || ''}</span></div>
+    <div class="big-number">${provDot(h.provenance)}${h.value}<span class="big-number-unit">${h.unit || ''}</span></div>
     <div class="big-delta sign-${h.sign}">${mode === 'after' ? 'Δ ' + h.delta : 'baseline'}</div>
     <svg class="spark" viewBox="0 0 200 32" preserveAspectRatio="none">
       <polyline points="${sparkline(id, mode, h.sign)}" fill="none" stroke="var(--${h.sign === 'neg' ? 'negative' : h.sign === 'pos' ? 'positive' : 'neutral'})" stroke-width="1.2"/>
@@ -88,7 +91,8 @@ function metricsCard(result, mode) {
       <div class="metric-row">
         <span class="label">${m.label}</span>
         <span>
-          <span class="value">${mode === 'before' ? m.baseline : m.projected}</span>
+          ${provDot(m.provenance)}
+          <span class="value prov-val-${m.provenance ?? ''}">${mode === 'before' ? m.baseline : m.projected}</span>
           ${mode === 'after' ? `<span class="delta sign-${m.sign}">${m.delta}</span>` : ''}
         </span>
       </div>`).join('');

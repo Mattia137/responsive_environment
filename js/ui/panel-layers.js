@@ -4,6 +4,7 @@
    ========================================================================= */
 
 import { LAYERS, LAYER_DETAILS } from '../layers/registry.js';
+import { provDot } from './prov.js';
 
 let _listeners = [];
 export function onLayerToggle(fn) { _listeners.push(fn); }
@@ -25,7 +26,7 @@ export function renderLayers(state) {
         <span class="layer-chk"></span>
         <span class="layer-idx">${String(i+1).padStart(2,'0')}</span>
         <span class="layer-name">${L.name}</span>
-        <span class="layer-delta mono ${deltaCls}">${deltaTxt}</span>
+        <span class="layer-delta mono ${deltaCls}">${active && headline ? provDot(headline.provenance) : ''}${deltaTxt}</span>
       </div>
       <div class="layer-detail">
         <div>${LAYER_DETAILS[L.id]?.note || ''}</div>

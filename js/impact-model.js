@@ -136,17 +136,20 @@ export function projectAir(geometry, program, context) {
   const baseline = context.baseline?.air || { pm25: 8.4, no2: 22.1, o3: 41.0 };
   const pm25_proj = baseline.pm25 + trucks_per_day_peak * 0.018;
   const no2_proj  = baseline.no2  + gfa * 0.015 / 1000 * 0.9;
+  // PM2.5 baseline is MODELED when live AirNow data is present, BENCHMARK when using fallback
+  const airProv = baseline._mock ? 'BENCHMARK' : 'MODELED';
   return {
     headline: {
       label: 'PM2.5 local mean', value: pm25_proj.toFixed(1), unit: 'µg/m³',
       delta: `${(((pm25_proj - baseline.pm25) / baseline.pm25) * 100).toFixed(1)}%`,
       sign:  pm25_proj > baseline.pm25 ? 'neg' : 'pos',
+      provenance: airProv,
     },
     metrics: [
-      { label: 'PM2.5 annual mean', baseline: baseline.pm25.toFixed(1)+' µg/m³', projected: pm25_proj.toFixed(1)+' µg/m³', delta: `+${((pm25_proj-baseline.pm25)).toFixed(2)}`, sign:'neg' },
-      { label: 'NO₂ annual mean',  baseline: baseline.no2.toFixed(1)+' µg/m³', projected: no2_proj.toFixed(1)+' µg/m³',  delta: `+${((no2_proj-baseline.no2)).toFixed(2)}`, sign:'neg' },
-      { label: 'Construction duration', baseline: '—', projected: months_build.toFixed(1)+' mo', delta: `+${months_build.toFixed(1)} mo`, sign:'neg' },
-      { label: 'Haul trucks / peak day', baseline: '—', projected: Math.round(trucks_per_day_peak).toString(), delta: `+${Math.round(trucks_per_day_peak)}`, sign:'neg' },
+      { label: 'PM2.5 annual mean', baseline: baseline.pm25.toFixed(1)+' µg/m³', projected: pm25_proj.toFixed(1)+' µg/m³', delta: `+${((pm25_proj-baseline.pm25)).toFixed(2)}`, sign:'neg', provenance: airProv },
+      { label: 'NO₂ annual mean',  baseline: baseline.no2.toFixed(1)+' µg/m³', projected: no2_proj.toFixed(1)+' µg/m³',  delta: `+${((no2_proj-baseline.no2)).toFixed(2)}`, sign:'neg', provenance: 'BENCHMARK' },
+      { label: 'Construction duration', baseline: '—', projected: months_build.toFixed(1)+' mo', delta: `+${months_build.toFixed(1)} mo`, sign:'neg', provenance: 'BENCHMARK' },
+      { label: 'Haul trucks / peak day', baseline: '—', projected: Math.round(trucks_per_day_peak).toString(), delta: `+${Math.round(trucks_per_day_peak)}`, sign:'neg', provenance: 'BENCHMARK' },
     ],
     spatial: {
       type: 'heatmap',
@@ -170,12 +173,13 @@ export function projectPower(geometry, program, context) {
       unit:  'MWh/yr',
       delta: `+${eui.toFixed(0)} kWh/m²`,
       sign:  'neg',
+      provenance: 'BENCHMARK',
     },
     metrics: [
-      { label: 'Annual energy',    baseline: '0 MWh',     projected: (annual_kWh/1000).toFixed(0)+' MWh', delta: `+${(annual_kWh/1000).toFixed(0)}`, sign:'neg' },
-      { label: 'Peak demand',      baseline: '0 MW',      projected: peak_MW.toFixed(2)+' MW',          delta: `+${peak_MW.toFixed(2)}`,           sign:'neg' },
-      { label: 'Operational CO₂e', baseline: '0 t/yr',    projected: co2_tonnes.toFixed(0)+' t/yr',     delta: `+${co2_tonnes.toFixed(0)}`,        sign:'neg' },
-      { label: 'LL97 2024–29 limit (cultural)', baseline: '—', projected: '0.758 kgCO₂e/m²·yr',          delta: (co2_tonnes*1000/gfa).toFixed(2)+' vs. limit', sign:'neu' },
+      { label: 'Annual energy',    baseline: '0 MWh',     projected: (annual_kWh/1000).toFixed(0)+' MWh', delta: `+${(annual_kWh/1000).toFixed(0)}`, sign:'neg', provenance: 'BENCHMARK' },
+      { label: 'Peak demand',      baseline: '0 MW',      projected: peak_MW.toFixed(2)+' MW',          delta: `+${peak_MW.toFixed(2)}`,           sign:'neg', provenance: 'BENCHMARK' },
+      { label: 'Operational CO₂e', baseline: '0 t/yr',    projected: co2_tonnes.toFixed(0)+' t/yr',     delta: `+${co2_tonnes.toFixed(0)}`,        sign:'neg', provenance: 'BENCHMARK' },
+      { label: 'LL97 2024–29 limit (cultural)', baseline: '—', projected: '0.758 kgCO₂e/m²·yr',          delta: (co2_tonnes*1000/gfa).toFixed(2)+' vs. limit', sign:'neu', provenance: 'BENCHMARK' },
     ],
     spatial: {
       type: 'flow',
@@ -197,11 +201,12 @@ export function projectPedestrian(geometry, program, context) {
       unit:  '',
       delta: `+${Math.round(peak_hr)} peak hr`,
       sign:  'neu',
+      provenance: 'BENCHMARK',
     },
     metrics: [
-      { label: 'Annual visitors',    baseline: '0', projected: (annual_visitors).toLocaleString(), delta: `+${(annual_visitors).toLocaleString()}`, sign:'neu' },
-      { label: 'Peak-hour visitors', baseline: '0', projected: Math.round(peak_hr).toString(),    delta: `+${Math.round(peak_hr)}`,               sign:'neu' },
-      { label: 'Weekend peak day',   baseline: '—', projected: Math.round(annual_visitors/365*1.8).toString(), delta: 'est.', sign:'neu' },
+      { label: 'Annual visitors',    baseline: '0', projected: (annual_visitors).toLocaleString(), delta: `+${(annual_visitors).toLocaleString()}`, sign:'neu', provenance: 'BENCHMARK' },
+      { label: 'Peak-hour visitors', baseline: '0', projected: Math.round(peak_hr).toString(),    delta: `+${Math.round(peak_hr)}`,               sign:'neu', provenance: 'BENCHMARK' },
+      { label: 'Weekend peak day',   baseline: '—', projected: Math.round(annual_visitors/365*1.8).toString(), delta: 'est.', sign:'neu', provenance: 'BENCHMARK' },
     ],
     spatial: {
       type: 'ped',
@@ -222,6 +227,7 @@ export function projectRent(geometry, program, context) {
       unit: '',
       delta: '5-yr projection',
       sign: 'neg',
+      provenance: 'BENCHMARK',
     },
     metrics: COEFFICIENTS.ANCHOR_RENT_UPLIFT.map(b => ({
       label: `Uplift @ ${b.radius_m}m`,
@@ -229,6 +235,7 @@ export function projectRent(geometry, program, context) {
       projected: `+${(b.pct * 100 * scale_factor).toFixed(1)}%`,
       delta: `+${(b.pct * 100 * scale_factor).toFixed(1)}%`,
       sign: 'neg',
+      provenance: 'BENCHMARK',
     })),
     spatial: {
       type: 'rings',
@@ -245,7 +252,7 @@ export function projectRent(geometry, program, context) {
 export function projectDisplacement(geometry, program, context) {
   const gfa = program.gfa_m2;
   const scale_factor = Math.sqrt(gfa / 15000);
-  // Baseline should come from ACS join — placeholder:
+  // Baseline should come from ACS join — placeholder until Census API integration:
   const at_risk_baseline = 1840;
   const at_risk_projected = Math.round(at_risk_baseline * (1 + 0.34 * scale_factor));
   return {
@@ -255,11 +262,12 @@ export function projectDisplacement(geometry, program, context) {
       unit: 'HH',
       delta: `+${(((at_risk_projected - at_risk_baseline) / at_risk_baseline) * 100).toFixed(0)}%`,
       sign: 'neg',
+      provenance: 'SYNTHETIC',  // baseline 1,840 is a hardcoded placeholder, not ACS data
     },
     metrics: [
-      { label: 'Rent-burdened HH',      baseline: at_risk_baseline.toLocaleString(), projected: at_risk_projected.toLocaleString(), delta: `+${at_risk_projected-at_risk_baseline}`, sign:'neg' },
-      { label: 'Long-tenure share',     baseline: '38%', projected: `${(38 - 7*scale_factor).toFixed(0)}%`, delta: `-${(7*scale_factor).toFixed(0)}pt`, sign:'neg' },
-      { label: 'Rent-stabilized @ risk', baseline: '—',   projected: `${Math.round(880*scale_factor)} units`, delta: 'flag',    sign:'neg' },
+      { label: 'Rent-burdened HH',      baseline: at_risk_baseline.toLocaleString(), projected: at_risk_projected.toLocaleString(), delta: `+${at_risk_projected-at_risk_baseline}`, sign:'neg', provenance: 'SYNTHETIC' },
+      { label: 'Long-tenure share',     baseline: '38%', projected: `${(38 - 7*scale_factor).toFixed(0)}%`, delta: `-${(7*scale_factor).toFixed(0)}pt`, sign:'neg', provenance: 'BENCHMARK' },
+      { label: 'Rent-stabilized @ risk', baseline: '—',   projected: `${Math.round(880*scale_factor)} units`, delta: 'flag',    sign:'neg', provenance: 'BENCHMARK' },
     ],
     spatial: {
       type: 'rings',
@@ -286,11 +294,12 @@ export function projectInduced(geometry, program, context) {
       unit: '',
       delta: '400m ring',
       sign: 'pos',
+      provenance: 'BENCHMARK',
     },
     metrics: [
-      { label: 'F&B establishments',  baseline: '—', projected: `+${Math.round(new_storefronts * 0.5)}`, delta: 'est.', sign:'pos' },
-      { label: 'Retail storefronts',  baseline: '—', projected: `+${Math.round(new_storefronts * 0.4)}`, delta: 'est.', sign:'pos' },
-      { label: 'Hotel / hospitality', baseline: '—', projected: `+${Math.round(new_storefronts * 0.1)}`, delta: 'est.', sign:'pos' },
+      { label: 'F&B establishments',  baseline: '—', projected: `+${Math.round(new_storefronts * 0.5)}`, delta: 'est.', sign:'pos', provenance: 'BENCHMARK' },
+      { label: 'Retail storefronts',  baseline: '—', projected: `+${Math.round(new_storefronts * 0.4)}`, delta: 'est.', sign:'pos', provenance: 'BENCHMARK' },
+      { label: 'Hotel / hospitality', baseline: '—', projected: `+${Math.round(new_storefronts * 0.1)}`, delta: 'est.', sign:'pos', provenance: 'BENCHMARK' },
     ],
     spatial: {
       type: 'points',
@@ -313,11 +322,12 @@ export function projectTransit(geometry, program, context) {
       unit: '',
       delta: `${(transit_share*100).toFixed(0)}% mode share`,
       sign: 'neg',
+      provenance: 'BENCHMARK',
     },
     metrics: [
-      { label: 'Subway entries (nearest sta.)', baseline: '42,100', projected: (42100 + Math.round(daily_entries*0.7)).toLocaleString(), delta:`+${Math.round(daily_entries*0.7)}`, sign:'neg' },
-      { label: 'Bus entries',                    baseline: '14,200', projected: (14200 + Math.round(daily_entries*0.15)).toLocaleString(), delta:`+${Math.round(daily_entries*0.15)}`, sign:'neg' },
-      { label: 'Citi Bike trips',                baseline: '11,400', projected: (11400 + Math.round(daily_entries*0.15)).toLocaleString(), delta:`+${Math.round(daily_entries*0.15)}`, sign:'neu' },
+      { label: 'Subway entries (nearest sta.)', baseline: '42,100', projected: (42100 + Math.round(daily_entries*0.7)).toLocaleString(), delta:`+${Math.round(daily_entries*0.7)}`, sign:'neg', provenance: 'BENCHMARK' },
+      { label: 'Bus entries',                    baseline: '14,200', projected: (14200 + Math.round(daily_entries*0.15)).toLocaleString(), delta:`+${Math.round(daily_entries*0.15)}`, sign:'neg', provenance: 'BENCHMARK' },
+      { label: 'Citi Bike trips',                baseline: '11,400', projected: (11400 + Math.round(daily_entries*0.15)).toLocaleString(), delta:`+${Math.round(daily_entries*0.15)}`, sign:'neu', provenance: 'BENCHMARK' },
     ],
     spatial: {
       type: 'points',
@@ -346,12 +356,13 @@ export function projectCost(geometry, program, context) {
       unit: '',
       delta: `$${cost_per_m2.toLocaleString()}/m²`,
       sign: 'neu',
+      provenance: 'BENCHMARK',
     },
     metrics: [
-      { label: 'Cost range ±15%',   baseline: '—', projected: `$${(total_cost*0.85/1e6).toFixed(0)}M – $${(total_cost*1.15/1e6).toFixed(0)}M`, delta: '', sign:'neu' },
-      { label: 'Duration',          baseline: '—', projected: `${months.toFixed(0)} months`, delta:'',                                 sign:'neu' },
-      { label: 'Haul-truck trips',  baseline: '—', projected: Math.round(trucks).toLocaleString(), delta:`+${Math.round(trucks)}`,    sign:'neg' },
-      { label: 'Embodied CO₂e',     baseline: '—', projected: `${(embodied/1000).toFixed(0)} t`, delta: 'up-front', sign:'neg' },
+      { label: 'Cost range ±15%',   baseline: '—', projected: `$${(total_cost*0.85/1e6).toFixed(0)}M – $${(total_cost*1.15/1e6).toFixed(0)}M`, delta: '', sign:'neu', provenance: 'BENCHMARK' },
+      { label: 'Duration',          baseline: '—', projected: `${months.toFixed(0)} months`, delta:'',                                 sign:'neu', provenance: 'BENCHMARK' },
+      { label: 'Haul-truck trips',  baseline: '—', projected: Math.round(trucks).toLocaleString(), delta:`+${Math.round(trucks)}`,    sign:'neg', provenance: 'BENCHMARK' },
+      { label: 'Embodied CO₂e',     baseline: '—', projected: `${(embodied/1000).toFixed(0)} t`, delta: 'up-front', sign:'neg', provenance: 'BENCHMARK' },
     ],
     spatial: {
       type: 'rings',
@@ -374,11 +385,12 @@ export function projectWater(geometry, program, context) {
       unit: 'gpd',
       delta: 'CSO-risk shed',
       sign: 'neg',
+      provenance: 'BENCHMARK',
     },
     metrics: [
-      { label: 'Potable demand', baseline: '0', projected: `${potable_gpd.toFixed(0)} gpd`, delta:`+${potable_gpd.toFixed(0)}`, sign:'neg' },
-      { label: 'Impervious area', baseline: '—', projected: `${Math.round(footprint)} m²`, delta:`+${Math.round(footprint)}`, sign:'neg' },
-      { label: 'Runoff peak',     baseline: '—', projected: `${(runoff_gpd/1000).toFixed(1)}k gpd`, delta:`+${(runoff_gpd/1000).toFixed(1)}k`, sign:'neg' },
+      { label: 'Potable demand', baseline: '0', projected: `${potable_gpd.toFixed(0)} gpd`, delta:`+${potable_gpd.toFixed(0)}`, sign:'neg', provenance: 'BENCHMARK' },
+      { label: 'Impervious area', baseline: '—', projected: `${Math.round(footprint)} m²`, delta:`+${Math.round(footprint)}`, sign:'neg', provenance: 'BENCHMARK' },
+      { label: 'Runoff peak',     baseline: '—', projected: `${(runoff_gpd/1000).toFixed(1)}k gpd`, delta:`+${(runoff_gpd/1000).toFixed(1)}k`, sign:'neg', provenance: 'BENCHMARK' },
     ],
     spatial: {
       type: 'flow',
@@ -401,11 +413,12 @@ export function projectWaste(geometry, program, context) {
       unit: 'lb/day',
       delta: `+${dB_delta.toFixed(1)} dB L_eq`,
       sign: 'neg',
+      provenance: 'BENCHMARK',
     },
     metrics: [
-      { label: 'Daily waste', baseline: '0', projected: `${Math.round(waste_lb_per_day)} lb/d`, delta:`+${Math.round(waste_lb_per_day)}`, sign:'neg' },
-      { label: 'Event-peak waste', baseline: '—', projected: `${Math.round(waste_lb_per_day * 3.5)} lb/d`, delta:'3.5× avg', sign:'neg' },
-      { label: 'Ambient L_eq',   baseline: '62 dB', projected: `${(62 + dB_delta).toFixed(0)} dB`, delta:`+${dB_delta.toFixed(1)} dB`, sign:'neg' },
+      { label: 'Daily waste', baseline: '0', projected: `${Math.round(waste_lb_per_day)} lb/d`, delta:`+${Math.round(waste_lb_per_day)}`, sign:'neg', provenance: 'BENCHMARK' },
+      { label: 'Event-peak waste', baseline: '—', projected: `${Math.round(waste_lb_per_day * 3.5)} lb/d`, delta:'3.5× avg', sign:'neg', provenance: 'BENCHMARK' },
+      { label: 'Ambient L_eq',   baseline: '62 dB', projected: `${(62 + dB_delta).toFixed(0)} dB`, delta:`+${dB_delta.toFixed(1)} dB`, sign:'neg', provenance: 'BENCHMARK' },
     ],
     spatial: {
       type: 'rings',

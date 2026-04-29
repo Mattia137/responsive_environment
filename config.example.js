@@ -5,7 +5,7 @@
 
 export const CONFIG = {
   /* REQUIRED */
-  MAPTILER_KEY: typeof process !== 'undefined' ? process.env.MAPTILER_API : 'YOUR_MAPTILER_KEY_HERE',         // https://cloud.maptiler.com/account/keys/
+  MAPTILER_KEY: 'WWwr7EfWrAAHDMrvyQMk',         // https://cloud.maptiler.com/account/keys/
 
   /* OPTIONAL — layer works without these, using benchmark fallbacks */
   AIRNOW_KEY:   '',                                // https://docs.airnowapi.org/account/request/

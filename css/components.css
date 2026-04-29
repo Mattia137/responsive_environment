@@ -4,6 +4,11 @@
    ======================================================================== */
 
 /* --------------------------------------------------------------
+   Utility
+   -------------------------------------------------------------- */
+.hidden { display: none !important; }
+
+/* --------------------------------------------------------------
    BEFORE / AFTER toggle
    -------------------------------------------------------------- */
 .state-toggle {
@@ -234,7 +239,8 @@ html[data-theme="light"] .theme-toggle .icon-moon { display: none; }
   width: 100%;
   accent-color: var(--accent);
 }
-.control-grid label:has(input[type="range"]) {
+.control-grid label:has(input[type="range"]),
+.control-grid label.span-full {
   grid-column: span 2;
 }
 
@@ -332,6 +338,244 @@ html[data-theme="light"] .theme-toggle .icon-moon { display: none; }
 .pill.live { color: var(--positive); border-color: var(--positive); }
 
 /* --------------------------------------------------------------
+   Provenance dots — Phase 1
+   MEASURED: green  MODELED: amber  BENCHMARK: dim amber  SYNTHETIC: red
+   -------------------------------------------------------------- */
+.prov-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  margin-right: 5px;
+  flex-shrink: 0;
+  cursor: help;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+}
+.prov-dot[data-prov="MEASURED"]  { background: var(--positive); }
+.prov-dot[data-prov="MODELED"]   { background: var(--neutral); }
+.prov-dot[data-prov="BENCHMARK"] { background: var(--neutral); opacity: 0.55; }
+.prov-dot[data-prov="SYNTHETIC"] { background: var(--negative); }
+
+/* Value text decoration by provenance level */
+.prov-val-MODELED   { text-decoration: underline; text-decoration-style: dashed; text-decoration-color: var(--neutral); text-underline-offset: 2px; }
+.prov-val-BENCHMARK { text-decoration: underline; text-decoration-style: dotted; text-decoration-color: var(--ink-faint); text-underline-offset: 2px; }
+.prov-val-SYNTHETIC { font-style: italic; color: var(--negative); }
+.prov-val-SYNTHETIC::after { content: ' ?'; }
+
+/* --------------------------------------------------------------
+   Geocoder search (header)
+   -------------------------------------------------------------- */
+.geo-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 220px;
+}
+.geo-icon { color: var(--ink-faint); flex-shrink: 0; }
+.geo-input {
+  flex: 1;
+  background: var(--bg-2);
+  border: 1px solid var(--line-bright);
+  color: var(--ink);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  padding: 5px 8px;
+  text-transform: uppercase;
+  min-width: 0;
+}
+.geo-input::placeholder { color: var(--ink-faint); }
+.geo-input:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+
+.geo-results {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  background: var(--bg-panel);
+  border: 1px solid var(--line-bright);
+  list-style: none;
+  z-index: 50;
+  max-height: 240px;
+  overflow-y: auto;
+  box-shadow: var(--shadow-2);
+}
+.geo-results:empty { display: none; }
+.geo-result-item {
+  padding: 9px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.geo-result-item:last-child { border-bottom: none; }
+.geo-result-item:hover { background: var(--bg-2); }
+.geo-result-name { font-size: 10px; color: var(--ink); letter-spacing: 0.04em; }
+.geo-result-sub  { font-size: 9px; color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase; }
+
+/* --------------------------------------------------------------
+   Wrap Inspector header button
+   -------------------------------------------------------------- */
+.wrap-inspector-btn {
+  width: 28px; height: 28px;
+  padding: 0;
+  border: 1px solid var(--line-bright);
+  background: var(--bg-2);
+  color: var(--ink-dim);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.wrap-inspector-btn:hover { color: var(--ink); border-color: var(--ink-faint); }
+.wrap-inspector-btn[aria-expanded="true"] {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+/* --------------------------------------------------------------
+   Wrap Inspector panel
+   -------------------------------------------------------------- */
+.wrap-inspector {
+  position: fixed;
+  top: 49px;   /* below header */
+  right: 0;
+  bottom: 29px; /* above footer */
+  width: 420px;
+  background: var(--bg-panel);
+  border-left: 1px solid var(--line-bright);
+  display: flex;
+  flex-direction: column;
+  z-index: 20;
+  transform: translateX(100%);
+  transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-2);
+}
+.wrap-inspector.open { transform: translateX(0); }
+
+.wrap-inspector-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--line-bright);
+  flex-shrink: 0;
+}
+.wrap-inspector-title {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.wrap-inspector-sub {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+.wrap-inspector-close {
+  width: 24px; height: 24px;
+  padding: 0;
+  border: 1px solid var(--line-bright);
+  background: transparent;
+  color: var(--ink-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.wrap-inspector-close:hover { color: var(--ink); border-color: var(--ink-faint); }
+
+.wrap-inspector-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+}
+
+/* Layer section */
+.wrap-section {
+  padding: 16px 16px 20px;
+  transition: background 120ms;
+}
+.wrap-section-active { background: var(--bg-2); }
+.wrap-section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--accent);
+}
+.wrap-layer-num {
+  font-size: 9px;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+}
+.wrap-layer-name {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+/* Content blocks */
+.wrap-block { margin-bottom: 14px; }
+.wrap-block:last-child { margin-bottom: 0; }
+.wrap-block-title {
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.wrap-text {
+  font-size: 10.5px;
+  line-height: 1.65;
+  color: var(--ink-dim);
+}
+.wrap-text-serif {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 11.5px;
+  color: var(--ink);
+}
+.wrap-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.wrap-list li {
+  font-size: 10.5px;
+  line-height: 1.65;
+  color: var(--ink-dim);
+  padding-left: 14px;
+  position: relative;
+}
+.wrap-list li::before {
+  content: '–';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+}
+
+.wrap-divider {
+  height: 1px;
+  background: var(--line-bright);
+  margin: 0 16px;
+}
+
+@media (max-width: 1024px) {
+  .wrap-inspector { width: 100%; border-left: none; border-top: 1px solid var(--line-bright); }
+}
+
+/* --------------------------------------------------------------
    Map legend (floating, bottom-left of map area)
    -------------------------------------------------------------- */
 .map-legend {
@@ -413,3 +657,66 @@ html[data-theme="light"] .theme-toggle .icon-moon { display: none; }
   padding-top: 6px;
   line-height: 1.4;
 }
+
+/* --------------------------------------------------------------
+   Impact geometry notice — Phase 3
+   -------------------------------------------------------------- */
+.geo-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 0 16px 14px;
+  padding: 6px 10px;
+  border-left: 2px solid var(--accent-dim);
+  font-size: 9px;
+  color: var(--ink-faint);
+  letter-spacing: 0.05em;
+  line-height: 1.5;
+}
+.geo-notice .prov-dot { flex-shrink: 0; margin-top: 2px; }
+
+/* --------------------------------------------------------------
+   Wrap Inspector editorial callout — Phase 3
+   -------------------------------------------------------------- */
+.wrap-editorial {
+  margin: 12px 16px 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--accent-dim);
+  background: var(--accent-glow);
+}
+.wrap-editorial-title {
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.wrap-editorial-text {
+  font-size: 10.5px;
+  color: var(--ink-dim);
+  line-height: 1.65;
+  margin: 0;
+}
+.wrap-editorial-why-btn {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  background: none;
+  border: 1px solid var(--accent-dim);
+  padding: 3px 8px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.wrap-editorial-why-btn:hover { background: var(--accent-glow); }
+.wrap-editorial-why {
+  display: none;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--accent-dim);
+  font-size: 10px;
+  color: var(--ink-dim);
+  line-height: 1.65;
+}
+.wrap-editorial-why.open { display: block; }

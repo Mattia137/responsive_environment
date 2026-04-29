@@ -25,8 +25,9 @@ function writeCache(data) {
 export async function prefetchAllBaselineData(state) {
   const cache = readCache();
   const data  = { ...cache };
-  const lat = CONFIG.DEFAULT_CENTER[1];
-  const lon = CONFIG.DEFAULT_CENTER[0];
+  const site = CONFIG.SITE_CENTER ?? CONFIG.DEFAULT_CENTER;
+  const lat = site[1];
+  const lon = site[0];
 
   const run = async (key, fn, fallback) => {
     if (data[key]) return;

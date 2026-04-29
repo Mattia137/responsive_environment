@@ -28,7 +28,6 @@ export function initMap(state) {
     pitch:  CONFIG.DEFAULT_PITCH,
     bearing: CONFIG.DEFAULT_BEARING,
     antialias: true,
-    hash: true,
     navigationControl: false,
     geolocateControl: false,
     attributionControl: false,
@@ -37,6 +36,7 @@ export function initMap(state) {
   });
 
   map.on('load', () => {
+    _enableGlobe();
     _applyThemeBaseStyling();
     wireCameraReadouts();
     _ready = true;
@@ -196,4 +196,55 @@ export function removeLayer(id) {
 }
 export function removeSource(id) {
   if (map && map.getSource(id)) try { map.removeSource(id); } catch (e) {}
+}
+
+/* --- Globe projection + atmosphere --- */
+function _enableGlobe() {
+  try { map.setProjection('globe'); } catch (e) {}
+  try {
+    map.setFog({
+      color:            'rgb(10, 10, 10)',
+      'high-color':     'rgb(15, 25, 60)',
+      'horizon-blend':  0.04,
+      'space-color':    'rgb(4, 4, 12)',
+      'star-intensity': 0.7,
+    });
+  } catch (e) {}
+}
+
+/* --- Fly helpers --- */
+export function flyTo(lngLat, options = {}) {
+  if (!map) return;
+  map.flyTo({
+    center:   lngLat,
+    zoom:     options.zoom     ?? 14,
+    pitch:    options.pitch    ?? 55,
+    bearing:  options.bearing  ?? 0,
+    duration: options.duration ?? 3000,
+    essential: true,
+  });
+}
+
+export function flyToSite() {
+  flyTo(CONFIG.SITE_CENTER, {
+    zoom:     CONFIG.SITE_ZOOM,
+    pitch:    CONFIG.SITE_PITCH,
+    bearing:  CONFIG.SITE_BEARING,
+    duration: 4500,
+  });
+}
+
+/* --- Geocoding via MapTiler REST API --- */
+export async function geocode(query) {
+  const key = CONFIG.MAPTILER_KEY;
+  if (!key || query.length < 2) return [];
+  try {
+    const url = `https://api.maptiler.com/geocoding/${encodeURIComponent(query)}.json?key=${key}&limit=5`;
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.features || [];
+  } catch {
+    return [];
+  }
 }

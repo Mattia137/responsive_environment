@@ -4,7 +4,8 @@
    ========================================================================= */
 
 import { CONFIG } from '../config.js';
-import { initMap, getMap, onMapReady, setTheme as setMapTheme } from './map.js';
+import { initMap, getMap, onMapReady, setTheme as setMapTheme, flyToSite, flyTo, geocode } from './map.js';
+import { fetchIsochrone } from './geometry.js';
 import { loadGLB, clearMassing, updateMassingTransform, getMassingTransform, extractGeometry } from './massing.js';
 import { runImpactModel } from './impact-model.js';
 import { prefetchAllBaselineData } from './data-loader.js';
@@ -13,6 +14,7 @@ import { renderLayers, onLayerToggle } from './ui/panel-layers.js';
 import { initMassingControls, onMassingUpdate, setDerived, handleFile } from './ui/panel-massing.js';
 import { renderReadouts } from './ui/panel-readouts.js';
 import { renderActiveLayers } from './layers/dispatch.js';
+import { initWrapInspector, toggle as toggleWrapInspector, syncActiveLayer } from './ui/wrap-inspector.js';
 
 /* ================================================================
    APPLICATION STATE — single source of truth
@@ -35,6 +37,12 @@ const state = {
   },
   impactResults: {},
   baselineData: {},
+  impactGeometry: {
+    mode:        'euclidean',
+    radius_m:    400,
+    iso_minutes: 15,
+    polygon:     null,
+  },
 };
 
 /* ================================================================
@@ -111,6 +119,8 @@ async function boot() {
           const gfaEl = document.getElementById('in-gfa');
           if (gfaEl) gfaEl.value = gfa;
         }
+        // Cinematic zoom-in from globe to site
+        flyToSite();
       } catch (err) {
         console.warn('[main] default GLB load failed:', err);
         document.getElementById('massing-status').textContent = 'NOT LOADED';
@@ -123,18 +133,23 @@ async function boot() {
     fullUpdate();
   });
 
-  /* 7. Live clock */
+  /* 7. Geocoder search */
+  wireGeoSearch();
+
+  /* 8b. Wrap Inspector */
+  initWrapInspector();
+
+  /* 8. Live clock */
   startClock();
 
-  /* 8. Footer marquee */
+  /* 9. Footer marquee */
   buildMarquee();
 
-  /* 9. Keyboard shortcuts */
+  /* 10. Keyboard shortcuts */
   document.addEventListener('keydown', e => {
-    if (e.code === 'Space' && !['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) {
-      e.preventDefault();
-      toggleMode();
-    }
+    if (['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) return;
+    if (e.code === 'Space') { e.preventDefault(); toggleMode(); }
+    if (e.code === 'KeyW')  { e.preventDefault(); toggleWrapInspector(); }
   });
 }
 
@@ -170,6 +185,9 @@ function handleLayerToggle(layerId) {
   } else {
     state.activeLayerIds.add(layerId);
   }
+  // Sync the most recently toggled layer to the Wrap Inspector
+  const mostRecent = state.activeLayerIds.has(layerId) ? layerId : [...state.activeLayerIds].at(-1) ?? null;
+  syncActiveLayer(mostRecent);
   fullUpdate();
 }
 
@@ -182,6 +200,10 @@ function handleMassingUpdate(update) {
     state.massing.loaded = false;
     state.massing.geometry = null;
     fullUpdate();
+    return;
+  }
+  if (update.geometry) {
+    handleGeometryUpdate(update.geometry); // async fire-and-forget
     return;
   }
   if (update.transform) {
@@ -201,6 +223,26 @@ function handleMassingUpdate(update) {
     Object.assign(state.program, update.program);
     fullUpdate();
   }
+}
+
+/* ================================================================
+   GEOMETRY UPDATE — async because isochrone fetch may be needed
+   ================================================================ */
+async function handleGeometryUpdate(geoUpdate) {
+  Object.assign(state.impactGeometry, geoUpdate);
+
+  // Re-fetch isochrone when switching to that mode or changing walk time
+  if (state.impactGeometry.mode === 'isochrone' &&
+      (geoUpdate.mode === 'isochrone' || 'iso_minutes' in geoUpdate)) {
+    const t       = getMassingTransform();
+    const mins    = state.impactGeometry.iso_minutes;
+    const feature = await fetchIsochrone(t.anchor_lon, t.anchor_lat, mins);
+    state.impactGeometry.polygon = feature;
+    if (!feature) console.warn('[main] isochrone fetch returned null — check network');
+  }
+
+  // Drawn polygon arrives directly in update.polygon; no extra fetch needed
+  fullUpdate();
 }
 
 /* ================================================================
@@ -236,6 +278,53 @@ function fullUpdate() {
 
   // Render map overlays — only when mode is 'after' or we want baseline vis
   renderActiveLayers(state);
+}
+
+/* ================================================================
+   GEOCODER SEARCH
+   ================================================================ */
+function wireGeoSearch() {
+  const input   = document.getElementById('geo-input');
+  const results = document.getElementById('geo-results');
+  if (!input || !results) return;
+
+  let debounce;
+  input.addEventListener('input', () => {
+    clearTimeout(debounce);
+    const q = input.value.trim();
+    if (q.length < 2) { results.innerHTML = ''; return; }
+    debounce = setTimeout(async () => {
+      const features = await geocode(q);
+      results.innerHTML = features.map(f => {
+        const name = f.text || f.place_name || '';
+        const sub  = (f.place_name || '').split(',').slice(1).join(',').trim();
+        const lng  = f.center?.[0] ?? 0;
+        const lat  = f.center?.[1] ?? 0;
+        return `<li class="geo-result-item" data-lng="${lng}" data-lat="${lat}">
+          <span class="geo-result-name">${name}</span>
+          ${sub ? `<span class="geo-result-sub">${sub}</span>` : ''}
+        </li>`;
+      }).join('');
+    }, 280);
+  });
+
+  results.addEventListener('click', e => {
+    const li = e.target.closest('.geo-result-item');
+    if (!li) return;
+    const lng = parseFloat(li.dataset.lng);
+    const lat = parseFloat(li.dataset.lat);
+    flyTo([lng, lat], { zoom: 14, pitch: 55, bearing: 0, duration: 3000 });
+    input.value = li.querySelector('.geo-result-name')?.textContent ?? '';
+    results.innerHTML = '';
+  });
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#geo-search')) results.innerHTML = '';
+  });
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { results.innerHTML = ''; input.blur(); }
+  });
 }
 
 /* ================================================================

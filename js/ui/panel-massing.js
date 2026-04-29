@@ -4,6 +4,7 @@
    ========================================================================= */
 
 import { loadGLB, clearMassing } from '../massing.js';
+import { startDrawMode, stopDrawMode } from '../geometry.js';
 
 let _listeners = [];
 export function onMassingUpdate(fn) { _listeners.push(fn); }
@@ -69,6 +70,76 @@ export function initMassingControls(state) {
     });
   }
 
+  /* ---- Impact geometry ---- */
+  const radiusEl   = document.getElementById('in-radius');
+  const vRadius    = document.getElementById('v-radius');
+  const geoModeEl  = document.getElementById('in-geo-mode');
+  const isoWrap    = document.getElementById('iso-minutes-label');
+  const drawWrap   = document.getElementById('draw-controls');
+  const isoMinEl   = document.getElementById('in-iso-minutes');
+  const btnDraw    = document.getElementById('btn-start-draw');
+  const btnClrDraw = document.getElementById('btn-clear-draw');
+
+  function updateGeoModeUI(mode) {
+    isoWrap?.classList.toggle('hidden', mode !== 'isochrone');
+    drawWrap?.classList.toggle('hidden', mode !== 'drawn');
+    if (mode !== 'drawn') stopDrawMode();
+    _syncGeoTag(mode, parseInt(radiusEl?.value ?? 400, 10), parseInt(isoMinEl?.value ?? 15, 10));
+  }
+
+  if (radiusEl) {
+    radiusEl.addEventListener('input', () => {
+      const r = parseInt(radiusEl.value, 10);
+      if (vRadius) vRadius.textContent = `${r} m`;
+      _syncGeoTag(geoModeEl?.value ?? 'euclidean', r, parseInt(isoMinEl?.value ?? 15, 10));
+      emit({ geometry: { radius_m: r } });
+    });
+  }
+
+  if (geoModeEl) {
+    geoModeEl.addEventListener('change', () => {
+      updateGeoModeUI(geoModeEl.value);
+      emit({ geometry: { mode: geoModeEl.value } });
+    });
+    updateGeoModeUI(geoModeEl.value);
+  }
+
+  if (isoMinEl) {
+    isoMinEl.addEventListener('change', () => {
+      const mins = parseInt(isoMinEl.value, 10);
+      _syncGeoTag('isochrone', 0, mins);
+      emit({ geometry: { iso_minutes: mins } });
+    });
+  }
+
+  if (btnDraw) {
+    btnDraw.addEventListener('click', () => {
+      btnDraw.textContent = 'DBL-CLICK TO CLOSE';
+      btnDraw.disabled    = true;
+      startDrawMode(
+        (poly) => {
+          btnDraw.textContent  = 'DRAW POLYGON';
+          btnDraw.disabled     = false;
+          if (btnClrDraw) btnClrDraw.disabled = false;
+          emit({ geometry: { polygon: poly } });
+        },
+        () => {
+          btnDraw.textContent = 'DRAW POLYGON';
+          btnDraw.disabled    = false;
+        },
+      );
+    });
+  }
+
+  if (btnClrDraw) {
+    btnClrDraw.addEventListener('click', () => {
+      btnClrDraw.disabled  = true;
+      if (btnDraw) { btnDraw.textContent = 'DRAW POLYGON'; btnDraw.disabled = false; }
+      stopDrawMode();
+      emit({ geometry: { polygon: null } });
+    });
+  }
+
   /* ---- Program spec ---- */
   const progEls = {
     program_type:            document.getElementById('in-program'),
@@ -108,6 +179,14 @@ export async function handleFile(f) {
     document.getElementById('massing-status').textContent = 'FAILED';
     return null;
   }
+}
+
+function _syncGeoTag(mode, radius, minutes) {
+  const tag = document.getElementById('geo-mode-tag');
+  if (!tag) return;
+  tag.textContent = mode === 'euclidean'  ? `EUCLIDEAN · ${radius} m`
+    : mode === 'isochrone'                ? `ISOCHRONE · ${minutes} min`
+    : 'DRAWN';
 }
 
 export function setDerived(geometry) {

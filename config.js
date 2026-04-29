@@ -4,8 +4,8 @@
    ========================================================================= */
 
 export const CONFIG = {
-  /* REQUIRED */
-  MAPTILER_KEY: typeof process !== 'undefined' ? (process.env.MAPTILER_API_01 || process.env.MAPTILER_API) : '', 
+  /* REQUIRED — add your key here for local dev; Vercel sets it via /api/config */
+  MAPTILER_KEY: '',  // ← paste your key here: https://cloud.maptiler.com/account/keys/
 
   /* OPTIONAL — layer works without these, using benchmark fallbacks */
   AIRNOW_KEY:   '',                                // https://docs.airnowapi.org/account/request/
@@ -13,11 +13,17 @@ export const CONFIG = {
   YELP_KEY:     '',                                // https://www.yelp.com/developers/v3 (induced demand)
   CENSUS_KEY:   '',                                // https://api.census.gov/data/key_signup.html (ACS)
 
-  /* SITE DEFAULTS */
-  DEFAULT_CENTER: [-74.006307, 40.753891],         // [lng, lat] — user's site coordinates
-  DEFAULT_ZOOM:   16.2,
-  DEFAULT_PITCH:  62,
-  DEFAULT_BEARING: -18,
+  /* GLOBE INTRO — camera starts here every load (full Earth visible) */
+  DEFAULT_CENTER: [0, 20],
+  DEFAULT_ZOOM:   1.5,
+  DEFAULT_PITCH:  0,
+  DEFAULT_BEARING: 0,
+
+  /* SITE — camera flies here after GLB loads */
+  SITE_CENTER:  [-74.006307, 40.753891],
+  SITE_ZOOM:    16.2,
+  SITE_PITCH:   62,
+  SITE_BEARING: -18,
 
   /* GLB placement — matches reference site (2GBX_environment-2) exactly */
   GLB_ORIGIN: { lng: -74.006649, lat: 40.754283 },

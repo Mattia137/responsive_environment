@@ -4,8 +4,9 @@
    Each layer file owns its data fetching, MapLibre layer setup, and legend.
    ========================================================================= */
 
-import { getMap, removeLayer, removeSource } from '../map.js';
+import { getMap, removeLayer, removeSource, ensureSource, ensureLayer } from '../map.js';
 import { LAYERS } from './registry.js';
+import { makeRing, asFeatureCollection } from '../geometry.js';
 
 /* Import every layer's render / clear API */
 import * as air          from './air.js';
@@ -39,11 +40,60 @@ export async function renderActiveLayers(state) {
     }
   }
 
+  // Always render the impact boundary outline
+  _renderBoundary(state);
+
   // Update map overlay tag
   const tag = document.getElementById('active-layer-tag');
   if (tag) {
     tag.textContent = state.activeLayerIds.size
       ? [...state.activeLayerIds].join(' · ').toUpperCase()
       : '— NONE —';
+  }
+}
+
+/* ---------------------------------------------------------------- */
+const BOUNDARY_SRC = 'allspark-impact-boundary-src';
+const BOUNDARY_LYR = 'allspark-impact-boundary';
+
+function _renderBoundary(state) {
+  const map = getMap();
+  if (!map) return;
+
+  const geo = state.impactGeometry;
+  if (!geo) return;
+
+  const t   = state.massing?.transform || {};
+  const lng = t.anchor_lon ?? -74.0063;
+  const lat = t.anchor_lat ?? 40.7539;
+
+  let feature = null;
+  if (geo.mode === 'euclidean') {
+    feature = makeRing(lng, lat, geo.radius_m ?? 400);
+  } else if (geo.polygon) {
+    feature = geo.polygon;
+  }
+
+  const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#ff5a1f';
+
+  ensureSource(BOUNDARY_SRC, asFeatureCollection(feature));
+  ensureLayer({
+    id:     BOUNDARY_LYR,
+    type:   'line',
+    source: BOUNDARY_SRC,
+    paint: {
+      'line-color':     accent,
+      'line-width':     1.5,
+      'line-dasharray': [3, 2],
+      'line-opacity':   feature ? 0.70 : 0,
+    },
+  });
+
+  // Sync radius readout in overlay
+  const radiusEl = document.getElementById('radius-readout');
+  if (radiusEl) {
+    radiusEl.textContent = geo.mode === 'euclidean' ? (geo.radius_m ?? 400)
+      : geo.mode === 'isochrone'                    ? `${geo.iso_minutes ?? 15}min`
+      : 'DRAWN';
   }
 }
