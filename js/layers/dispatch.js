@@ -10,6 +10,11 @@ import { makeRing, asFeatureCollection } from '../geometry.js';
 
 /* Import every layer's render / clear API */
 import * as air          from './air.js';
+import * as solar        from './solar.js';
+import * as carbon       from './carbon.js';
+import * as vegetation   from './vegetation.js';
+import * as biodiversity from './biodiversity.js';
+import * as shadow       from './shadow.js';
 import * as power        from './power.js';
 import * as pedestrian   from './pedestrian.js';
 import * as rent         from './rent.js';
@@ -20,7 +25,10 @@ import * as cost         from './cost.js';
 import * as water        from './water.js';
 import * as waste        from './waste.js';
 
-const LAYER_MODULES = { air, power, pedestrian, rent, displacement, induced, transit, cost, water, waste };
+const LAYER_MODULES = {
+  air, solar, carbon, vegetation, biodiversity, shadow,
+  power, pedestrian, rent, displacement, induced, transit, cost, water, waste,
+};
 
 export async function renderActiveLayers(state) {
   for (const L of LAYERS) {

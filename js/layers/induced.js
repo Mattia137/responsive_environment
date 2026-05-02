@@ -125,7 +125,7 @@ export async function render(state) {
   const { counts, needed } = computeGaps(annualVis, existingFeatures);
 
   let features = [...existingFeatures];
-  if (state.mode === 'after') {
+  if (state.timeStep > 0) {
     features = features.concat(generateNeededPoints(siteLat, siteLon, needed));
   }
 
@@ -151,12 +151,12 @@ export async function render(state) {
       ],
       'circle-stroke-color': '#000000',
       'circle-stroke-width': 0.5,
-      'circle-opacity': state.mode === 'after' ? 0.7 : 0.9,
+      'circle-opacity': state.timeStep > 0 ? 0.7 : 0.9,
     },
   });
 
   /* Projected new venue dots — pulsing ring effect */
-  if (state.mode === 'after') {
+  if (state.timeStep > 0) {
     ensureLayer({
       id: `${P}-projected`,
       type: 'circle',
@@ -197,15 +197,15 @@ export async function render(state) {
   const totalExisting = existingFeatures.length;
   const totalNeeded   = Object.values(needed).reduce((s, n) => s + n, 0);
   showLegend({
-    title: `INDUCED DEMAND${state.mode === 'after' ? ' — GAPS' : ' — EXISTING SUPPLY'}`,
+    title: `INDUCED DEMAND${state.timeStep > 0 ? ' — GAPS' : ' — EXISTING SUPPLY'}`,
     items: [
-      { color: CATS.food.color,          label: 'FOOD & DRINK',  value: `${counts.food ?? 0} exist${state.mode === 'after' && needed.food ? ` +${needed.food} needed` : ''}` },
-      { color: CATS.retail.color,        label: 'RETAIL',        value: `${counts.retail ?? 0} exist${state.mode === 'after' && needed.retail ? ` +${needed.retail} needed` : ''}` },
+      { color: CATS.food.color,          label: 'FOOD & DRINK',  value: `${counts.food ?? 0} exist${state.timeStep > 0 && needed.food ? ` +${needed.food} needed` : ''}` },
+      { color: CATS.retail.color,        label: 'RETAIL',        value: `${counts.retail ?? 0} exist${state.timeStep > 0 && needed.retail ? ` +${needed.retail} needed` : ''}` },
       { color: CATS.services.color,      label: 'SERVICES',      value: `${counts.services ?? 0} exist` },
-      { color: CATS.entertainment.color, label: 'ENTERTAINMENT', value: `${counts.entertainment ?? 0} exist${state.mode === 'after' && needed.entertainment ? ` +${needed.entertainment} needed` : ''}` },
+      { color: CATS.entertainment.color, label: 'ENTERTAINMENT', value: `${counts.entertainment ?? 0} exist${state.timeStep > 0 && needed.entertainment ? ` +${needed.entertainment} needed` : ''}` },
       { color: CATS.hotel.color,         label: 'HOTEL',         value: `${counts.hotel ?? 0} exist` },
     ],
-    note: state.mode === 'after'
+    note: state.timeStep > 0
       ? `${totalExisting} existing within 1 km · ${totalNeeded} new venues projected (white ring = gap)`
       : `${totalExisting} OSM amenities within 1 km radius · source: OpenStreetMap`,
   });

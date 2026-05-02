@@ -73,7 +73,7 @@ export function render(state) {
   });
 
   // Site demand circle
-  if (state.mode === 'after') {
+  if (state.timeStep > 0) {
     features.push({
       type: 'Feature',
       properties: { kind: 'site', mw: peakMW, label: `${(annualKwh / 1000).toFixed(0)} MWh/yr` },
@@ -121,10 +121,10 @@ export function render(state) {
     source: srcId,
     filter: ['==', ['get', 'kind'], 'feeder'],
     paint: {
-      'line-color':     state.mode === 'after' ? '#ff5a1f' : '#d4a857',
+      'line-color':     state.timeStep > 0 ? '#ff5a1f' : '#d4a857',
       'line-width':     ['interpolate', ['linear'], ['zoom'], 12, 1.5, 18, 4],
       'line-dasharray': [5, 3],
-      'line-opacity':   state.mode === 'after' ? 0.9 : 0.4,
+      'line-opacity':   state.timeStep > 0 ? 0.9 : 0.4,
     },
   });
 
@@ -170,14 +170,14 @@ export function render(state) {
     : `Est. GFA: ${Math.round(gfa_m2).toLocaleString()} m²`;
 
   showLegend({
-    title: `POWER SUPPLY${state.mode === 'after' ? ' — PROJECTED LOAD' : ' — NYC GRID'}`,
+    title: `POWER SUPPLY${state.timeStep > 0 ? ' — PROJECTED LOAD' : ' — NYC GRID'}`,
     items: [
       { color: '#ff8c00', label: 'POWER PLANT', value: `${plants.length} sites` },
       { color: '#5b9bd5', label: 'SUBSTATION',  value: `${SUBSTATIONS.length} nearby` },
-      { color: '#ff5a1f', label: 'SITE DEMAND', value: state.mode === 'after' ? `${peakMW.toFixed(2)} MW peak` : '—' },
+      { color: '#ff5a1f', label: 'SITE DEMAND', value: state.timeStep > 0 ? `${peakMW.toFixed(2)} MW peak` : '—' },
       { color: '#d4a857', label: 'FEEDER LINE', value: `→ ${nearest.name}` },
     ],
-    note: floorNote + (state.mode === 'after' ? `\nEUI: ${eui} kWh/m²/yr → ${(annualKwh/1000).toFixed(0)} MWh/yr` : ''),
+    note: floorNote + (state.timeStep > 0 ? `\nEUI: ${eui} kWh/m²/yr → ${(annualKwh/1000).toFixed(0)} MWh/yr` : ''),
   });
 }
 

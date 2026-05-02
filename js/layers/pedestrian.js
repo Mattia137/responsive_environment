@@ -63,7 +63,7 @@ export function render(state) {
 
   const features = CORRIDOR_PTS.map(({ lat, lon, base }) => {
     let weight = base / 3000;
-    if (state.mode === 'after') {
+    if (state.timeStep > 0) {
       const d = Math.sqrt((lat - siteLat) ** 2 + (lon - siteLon) ** 2);
       weight = Math.min(1, weight + (peakHr / 100) * Math.exp(-d / 0.003));
     }
@@ -78,7 +78,7 @@ export function render(state) {
     for (let i = 0; i < 12; i++) {
       const r = Math.random() * 0.0008;
       const a = Math.random() * Math.PI * 2;
-      const w = Math.min(1, boost * (state.mode === 'after' ? 1 + peakHr / 200 : 1));
+      const w = Math.min(1, boost * (state.timeStep > 0 ? 1 + peakHr / 200 : 1));
       features.push({
         type: 'Feature',
         properties: { weight: w },
@@ -99,7 +99,7 @@ export function render(state) {
       'heatmap-weight':    ['interpolate', ['linear'], ['get', 'weight'], 0, 0, 1, 1],
       'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 12, 0.5, 16, 2, 18, 4],
       'heatmap-radius':    ['interpolate', ['linear'], ['zoom'], 12, 12, 15, 20, 18, 30],
-      'heatmap-opacity':   state.mode === 'after' ? 0.80 : 0.60,
+      'heatmap-opacity':   state.timeStep > 0 ? 0.80 : 0.60,
       'heatmap-color': [
         'interpolate', ['linear'], ['heatmap-density'],
         0,    'rgba(0,0,0,0)',
@@ -113,7 +113,7 @@ export function render(state) {
     },
   });
 
-  if (state.mode === 'after' && peakHr > 0) {
+  if (state.timeStep > 0 && peakHr > 0) {
     const flowSrc = `${P}-flow-src`;
     ensureSource(flowSrc, {
       type: 'FeatureCollection',
@@ -141,7 +141,7 @@ export function render(state) {
 
   const annualVis = result?.metrics?.find(m => m.label === 'Annual visitors')?.projected ?? '—';
   showLegend({
-    title: `PEDESTRIAN TRAFFIC${state.mode === 'after' ? ' — PROJECTED' : ' — BASELINE'}`,
+    title: `PEDESTRIAN TRAFFIC${state.timeStep > 0 ? ' — PROJECTED' : ' — BASELINE'}`,
     gradient: {
       stops: [
         { color: '#1a9641', at: 0 },
@@ -152,7 +152,7 @@ export function render(state) {
       ],
       min: 'LOW', max: 'HIGH', unit: 'peds/hr',
     },
-    note: state.mode === 'after'
+    note: state.timeStep > 0
       ? `+${Math.round(peakHr)} peak-hr visitors · ${annualVis}/yr total`
       : 'Corridors weighted by transit proximity',
   });

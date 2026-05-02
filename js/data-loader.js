@@ -44,6 +44,7 @@ export async function prefetchAllBaselineData(state) {
     run('amenities',  () => fetchAmenitiesOSM(lat, lon),    { elements:[], _mock:true }),
     run('noise311',   () => fetchNoise311(lat, lon),        []),
     run('powerPlants',fetchPowerPlants,                     []),
+    run('climateT4',  () => fetchClimateT4(lat, lon),       { t_max: 34.5, t_mean: 28.2 }),
   ]);
 
   state.baselineData = data;
@@ -169,4 +170,16 @@ function mtaLineColor(sym) {
   }
   return '#AAAAAA';
 }
+
+async function fetchClimateT4(lat, lon) {
+  const url = `https://climate-api.open-meteo.com/v1/climate?latitude=${lat}&longitude=${lon}&start_date=2046-01-01&end_date=2046-12-31&models=EC_Earth3P_HR&daily=temperature_2m_max,temperature_2m_mean`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('CMIP6 fetch failed');
+  const json = await res.json();
+  const maxTemp = Math.max(...(json.daily.temperature_2m_max.filter(v => v !== null)));
+  const meanVals = json.daily.temperature_2m_mean.filter(v => v !== null);
+  const meanTemp = meanVals.reduce((a,b)=>a+b,0) / meanVals.length;
+  return { t_max: maxTemp, t_mean: meanTemp };
+}
+
 export { mtaLineColor };

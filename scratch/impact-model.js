@@ -120,22 +120,6 @@ export function runImpactModel({ geometry, program, context, timeStep }) {
   return out;
 }
 
-
-/* ================================================================
-   UNCERTAINTY HELPER
-   ================================================================ */
-function getUncertainty(val, timeStep) {
-  if (timeStep < 2 || typeof val !== 'number' || isNaN(val)) return undefined;
-  const spread = (timeStep - 1) * 0.1; // T2: 10%, T3: 20%, T4: 30%
-  return [val * (1 - spread), val * (1 + spread)];
-}
-
-function attachUncertainty(metricObj, val, timeStep) {
-  const u = getUncertainty(val, timeStep);
-  if (u) metricObj.uncertainty = u;
-  return metricObj;
-}
-
 /* ================================================================
    LAYER PROJECTIONS
    Each returns { headline, metrics, spatial }.
@@ -144,19 +128,19 @@ function attachUncertainty(metricObj, val, timeStep) {
    ================================================================ */
 
 /* ---------- (1) AIR QUALITY ---------- */
-export function projectAir(geometry, program, context, timeStep) {
+export function projectAir(geometry, program, context) {
   const gfa = program.gfa_m2;
-  const truck_trips   = (timeStep === 1) ? gfa * COEFFICIENTS.CONSTRUCTION.truck_trips_per_1000m2 / 1000 : 0;
+  const truck_trips   = gfa * COEFFICIENTS.CONSTRUCTION.truck_trips_per_1000m2 / 1000;
   const months_build  = gfa * COEFFICIENTS.CONSTRUCTION.duration_months_per_1000m2 / 1000;
-  const trucks_per_day_peak = (timeStep === 1) ? (truck_trips / (months_build * 22)) * 1.6 : 0;
+  const trucks_per_day_peak = (truck_trips / (months_build * 22)) * 1.6;
   const baseline = context.baseline?.air || { pm25: 8.4, no2: 22.1, o3: 41.0 };
   const pm25_proj = baseline.pm25 + trucks_per_day_peak * 0.018;
-  const no2_proj  = baseline.no2  + (timeStep >= 2 ? gfa * 0.015 / 1000 * 0.9 : 0);
+  const no2_proj  = baseline.no2  + gfa * 0.015 / 1000 * 0.9;
   // PM2.5 baseline is MODELED when live AirNow data is present, BENCHMARK when using fallback
   const airProv = baseline._mock ? 'BENCHMARK' : 'MODELED';
   return {
     headline: {
-      label: 'PM2.5 local mean', value: pm25_proj.toFixed(1), uncertainty: getUncertainty(pm25_proj, timeStep), unit: 'µg/m³',
+      label: 'PM2.5 local mean', value: pm25_proj.toFixed(1), unit: 'µg/m³',
       delta: `${(((pm25_proj - baseline.pm25) / baseline.pm25) * 100).toFixed(1)}%`,
       sign:  pm25_proj > baseline.pm25 ? 'neg' : 'pos',
       provenance: airProv,
@@ -176,16 +160,16 @@ export function projectAir(geometry, program, context, timeStep) {
 }
 
 /* ---------- (2) POWER ---------- */
-export function projectPower(geometry, program, context, timeStep) {
+export function projectPower(geometry, program, context) {
   const gfa = program.gfa_m2;
-  const eui = (timeStep >= 2) ? (COEFFICIENTS.EUI_BY_PROGRAM[program.type] ?? 300) : 0;
+  const eui = COEFFICIENTS.EUI_BY_PROGRAM[program.type] ?? 300;
   const annual_kWh = gfa * eui;
   const peak_MW    = annual_kWh * 0.00032 / 1000;
   const co2_tonnes = annual_kWh * COEFFICIENTS.GRID_KG_CO2_PER_KWH / 1000;
   return {
     headline: {
       label: 'Annual energy load',
-      value: (annual_kWh / 1000).toFixed(0), uncertainty: getUncertainty(annual_kWh / 1000, timeStep),
+      value: (annual_kWh / 1000).toFixed(0),
       unit:  'MWh/yr',
       delta: `+${eui.toFixed(0)} kWh/m²`,
       sign:  'neg',
@@ -195,14 +179,8 @@ export function projectPower(geometry, program, context, timeStep) {
       { label: 'Annual energy',    baseline: '0 MWh',     projected: (annual_kWh/1000).toFixed(0)+' MWh', delta: `+${(annual_kWh/1000).toFixed(0)}`, sign:'neg', provenance: 'BENCHMARK' },
       { label: 'Peak demand',      baseline: '0 MW',      projected: peak_MW.toFixed(2)+' MW',          delta: `+${peak_MW.toFixed(2)}`,           sign:'neg', provenance: 'BENCHMARK' },
       { label: 'Operational CO₂e', baseline: '0 t/yr',    projected: co2_tonnes.toFixed(0)+' t/yr',     delta: `+${co2_tonnes.toFixed(0)}`,        sign:'neg', provenance: 'BENCHMARK' },
-      { label: 'LL97 2024–29 limit', baseline: '—', projected: '0.758 kgCO₂e/m²·yr',          delta: (co2_tonnes*1000/gfa).toFixed(2)+' vs. limit', sign:'neu', provenance: 'BENCHMARK' },
-      (timeStep === 4 && context.baseline.climateT4) ? {
-        label: 'Grid Baseline Context',
-        baseline: '2024 Climate',
-        projected: `CMIP6 2046: T_max ${context.baseline.climateT4.t_max.toFixed(1)}°C`,
-        delta: 'Modeled Baseline', sign: 'neu', provenance: 'MODELED'
-      } : null
-    ].filter(Boolean),
+      { label: 'LL97 2024–29 limit (cultural)', baseline: '—', projected: '0.758 kgCO₂e/m²·yr',          delta: (co2_tonnes*1000/gfa).toFixed(2)+' vs. limit', sign:'neu', provenance: 'BENCHMARK' },
+    ],
     spatial: {
       type: 'flow',
       features: generateFeederFlowFeatures(context.site_lat_lon, [-73.9997, 40.7498], peak_MW),
@@ -212,14 +190,14 @@ export function projectPower(geometry, program, context, timeStep) {
 }
 
 /* ---------- (3) PEDESTRIAN ---------- */
-export function projectPedestrian(geometry, program, context, timeStep) {
+export function projectPedestrian(geometry, program, context) {
   const gfa = program.gfa_m2;
-  const annual_visitors = (timeStep >= 2) ? gfa * (COEFFICIENTS.VISITOR_DENSITY[program.type] ?? 0) : 0;
+  const annual_visitors = gfa * (COEFFICIENTS.VISITOR_DENSITY[program.type] ?? 0);
   const peak_hr         = annual_visitors * 0.0016;
   return {
     headline: {
       label: 'Annual visitors',
-      value: (annual_visitors / 1000).toFixed(0) + 'k', uncertainty: getUncertainty(annual_visitors / 1000, timeStep),
+      value: (annual_visitors / 1000).toFixed(0) + 'k',
       unit:  '',
       delta: `+${Math.round(peak_hr)} peak hr`,
       sign:  'neu',
@@ -239,13 +217,13 @@ export function projectPedestrian(geometry, program, context, timeStep) {
 }
 
 /* ---------- (4) RENT ---------- */
-export function projectRent(geometry, program, context, timeStep) {
+export function projectRent(geometry, program, context) {
   const gfa = program.gfa_m2;
-  const scale_factor = (timeStep >= 2) ? Math.sqrt(gfa / 15000) * (timeStep / 3) : 0;
+  const scale_factor = Math.sqrt(gfa / 15000);  // larger projects = stronger anchor
   return {
     headline: {
       label: 'Residential rent, 400m ring',
-      value: `+${(COEFFICIENTS.ANCHOR_RENT_UPLIFT[2].pct * 100 * scale_factor).toFixed(1)}%`, uncertainty: getUncertainty(COEFFICIENTS.ANCHOR_RENT_UPLIFT[2].pct * 100 * scale_factor, timeStep),
+      value: `+${(COEFFICIENTS.ANCHOR_RENT_UPLIFT[2].pct * 100 * scale_factor).toFixed(1)}%`,
       unit: '',
       delta: '5-yr projection',
       sign: 'neg',
@@ -271,16 +249,16 @@ export function projectRent(geometry, program, context, timeStep) {
 }
 
 /* ---------- (5) DISPLACEMENT ---------- */
-export function projectDisplacement(geometry, program, context, timeStep) {
+export function projectDisplacement(geometry, program, context) {
   const gfa = program.gfa_m2;
-  const scale_factor = (timeStep >= 2) ? Math.sqrt(gfa / 15000) * (timeStep / 3) : 0;
+  const scale_factor = Math.sqrt(gfa / 15000);
   // Baseline should come from ACS join — placeholder until Census API integration:
   const at_risk_baseline = 1840;
   const at_risk_projected = Math.round(at_risk_baseline * (1 + 0.34 * scale_factor));
   return {
     headline: {
       label: 'Households at displacement risk',
-      value: `+${at_risk_projected - at_risk_baseline}`, uncertainty: getUncertainty(at_risk_projected - at_risk_baseline, timeStep),
+      value: `+${at_risk_projected - at_risk_baseline}`,
       unit: 'HH',
       delta: `+${(((at_risk_projected - at_risk_baseline) / at_risk_baseline) * 100).toFixed(0)}%`,
       sign: 'neg',
@@ -305,14 +283,14 @@ export function projectDisplacement(geometry, program, context, timeStep) {
 }
 
 /* ---------- (6) INDUCED DEMAND ---------- */
-export function projectInduced(geometry, program, context, timeStep) {
+export function projectInduced(geometry, program, context) {
   const gfa = program.gfa_m2;
-  const annual_visitors = (timeStep >= 2) ? gfa * (COEFFICIENTS.VISITOR_DENSITY[program.type] ?? 0) : 0;
+  const annual_visitors = gfa * (COEFFICIENTS.VISITOR_DENSITY[program.type] ?? 0);
   const new_storefronts = Math.round(0.033 * annual_visitors / 1000);
   return {
     headline: {
       label: 'New viable storefronts (5yr)',
-      value: `+${new_storefronts}`, uncertainty: getUncertainty(new_storefronts, timeStep),
+      value: `+${new_storefronts}`,
       unit: '',
       delta: '400m ring',
       sign: 'pos',
@@ -332,15 +310,15 @@ export function projectInduced(geometry, program, context, timeStep) {
 }
 
 /* ---------- (7) TRANSIT ---------- */
-export function projectTransit(geometry, program, context, timeStep) {
+export function projectTransit(geometry, program, context) {
   const gfa = program.gfa_m2;
-  const annual_visitors = (timeStep >= 2) ? gfa * (COEFFICIENTS.VISITOR_DENSITY[program.type] ?? 0) : 0;
+  const annual_visitors = gfa * (COEFFICIENTS.VISITOR_DENSITY[program.type] ?? 0);
   const transit_share   = COEFFICIENTS.TRANSIT_SHARE_BY_PROGRAM[program.type] ?? 0.55;
   const daily_entries   = annual_visitors * transit_share / 365;
   return {
     headline: {
       label: 'Daily transit entries added',
-      value: `+${Math.round(daily_entries).toLocaleString()}`, uncertainty: getUncertainty(daily_entries, timeStep),
+      value: `+${Math.round(daily_entries).toLocaleString()}`,
       unit: '',
       delta: `${(transit_share*100).toFixed(0)}% mode share`,
       sign: 'neg',
@@ -360,7 +338,7 @@ export function projectTransit(geometry, program, context, timeStep) {
 }
 
 /* ---------- (8) COST & LOGISTICS ---------- */
-export function projectCost(geometry, program, context, timeStep) {
+export function projectCost(geometry, program, context) {
   const gfa = program.gfa_m2;
   const cost_per_m2 = program.type.startsWith('museum')
     ? COEFFICIENTS.CONSTRUCTION.cost_usd_per_m2_manhattan_museum
@@ -369,12 +347,12 @@ export function projectCost(geometry, program, context, timeStep) {
       : COEFFICIENTS.CONSTRUCTION.cost_usd_per_m2_manhattan_resi;
   const total_cost = gfa * cost_per_m2;
   const months     = gfa * COEFFICIENTS.CONSTRUCTION.duration_months_per_1000m2 / 1000;
-  const trucks     = (timeStep === 1) ? gfa * COEFFICIENTS.CONSTRUCTION.truck_trips_per_1000m2 / 1000 : 0;
+  const trucks     = gfa * COEFFICIENTS.CONSTRUCTION.truck_trips_per_1000m2 / 1000;
   const embodied   = gfa * (COEFFICIENTS.EMBODIED_BY_SYSTEM.hybrid);  // default; expose as program input later
   return {
     headline: {
       label: 'Capital cost (rough order)',
-      value: `$${(total_cost/1e6).toFixed(0)}M`, uncertainty: getUncertainty(total_cost/1e6, timeStep),
+      value: `$${(total_cost/1e6).toFixed(0)}M`,
       unit: '',
       delta: `$${cost_per_m2.toLocaleString()}/m²`,
       sign: 'neu',
@@ -395,15 +373,15 @@ export function projectCost(geometry, program, context, timeStep) {
 }
 
 /* ---------- (9) WATER ---------- */
-export function projectWater(geometry, program, context, timeStep) {
+export function projectWater(geometry, program, context) {
   const gfa = program.gfa_m2;
   const footprint = geometry.footprint_m2 || gfa / (geometry.num_floors_est || 6);
-  const potable_gpd    = (timeStep >= 2) ? gfa * (COEFFICIENTS.WATER_BY_PROGRAM[program.type] ?? 500) / 365 * 0.264 : 0;
-  const runoff_gpd     = footprint * COEFFICIENTS.RUNOFF_GPD_PER_M2_IMPERVIOUS * 1000 * (timeStep === 1 ? 1.5 : 1.0);
+  const potable_gpd    = gfa * (COEFFICIENTS.WATER_BY_PROGRAM[program.type] ?? 500) / 365 * 0.264;
+  const runoff_gpd     = footprint * COEFFICIENTS.RUNOFF_GPD_PER_M2_IMPERVIOUS * 1000;
   return {
     headline: {
       label: 'Stormwater runoff added',
-      value: `+${(runoff_gpd/1000).toFixed(1)}k`, uncertainty: getUncertainty(runoff_gpd/1000, timeStep),
+      value: `+${(runoff_gpd/1000).toFixed(1)}k`,
       unit: 'gpd',
       delta: 'CSO-risk shed',
       sign: 'neg',
@@ -423,15 +401,15 @@ export function projectWater(geometry, program, context, timeStep) {
 }
 
 /* ---------- (10) WASTE & NOISE ---------- */
-export function projectWaste(geometry, program, context, timeStep) {
+export function projectWaste(geometry, program, context) {
   const gfa = program.gfa_m2;
-  const annual_visitors = (timeStep >= 2) ? gfa * (COEFFICIENTS.VISITOR_DENSITY[program.type] ?? 0) : 0;
-  const waste_lb_per_day = (timeStep >= 2) ? annual_visitors * COEFFICIENTS.WASTE_LB_PER_VISITOR / 365 : 0;
-  const dB_delta         = (timeStep === 1) ? 18.0 : ((timeStep >= 2) ? 10 * Math.log10(1 + annual_visitors / 1e6) : 0);
+  const annual_visitors = gfa * (COEFFICIENTS.VISITOR_DENSITY[program.type] ?? 0);
+  const waste_lb_per_day = annual_visitors * COEFFICIENTS.WASTE_LB_PER_VISITOR / 365;
+  const dB_delta         = 10 * Math.log10(1 + annual_visitors / 1e6);
   return {
     headline: {
       label: 'Operational waste',
-      value: `${Math.round(waste_lb_per_day).toLocaleString()}`, uncertainty: getUncertainty(waste_lb_per_day, timeStep),
+      value: `${Math.round(waste_lb_per_day).toLocaleString()}`,
       unit: 'lb/day',
       delta: `+${dB_delta.toFixed(1)} dB L_eq`,
       sign: 'neg',

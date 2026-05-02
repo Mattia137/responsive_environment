@@ -61,10 +61,10 @@ export function showLayer(state) {
     source: srcId,
     filter: ['==', ['geometry-type'], 'LineString'],
     paint: {
-      'line-color':     state.mode === 'after' ? '#5b9bd5' : '#4a7a9a',
+      'line-color':     state.timeStep > 0 ? '#5b9bd5' : '#4a7a9a',
       'line-width':     ['interpolate', ['linear'], ['zoom'], 12, 0.8, 18, 2.5],
       'line-dasharray': [3, 2],
-      'line-opacity':   state.mode === 'after' ? 0.8 : 0.4,
+      'line-opacity':   state.timeStep > 0 ? 0.8 : 0.4,
     },
   });
 
@@ -76,7 +76,7 @@ export function showLayer(state) {
     filter: ['==', ['geometry-type'], 'Point'],
     paint: {
       'circle-radius':       ['interpolate', ['linear'], ['zoom'], 13, 3, 18, 7],
-      'circle-color':        state.mode === 'after' ? '#5b9bd5' : '#4a7a9a',
+      'circle-color':        state.timeStep > 0 ? '#5b9bd5' : '#4a7a9a',
       'circle-stroke-color': '#0a0a0a',
       'circle-stroke-width': 0.5,
       'circle-opacity':      0.75,

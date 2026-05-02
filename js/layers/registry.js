@@ -5,6 +5,11 @@
 
 export const LAYERS = [
   { id: 'air',           name: 'AIR QUALITY',            unit: 'µg/m³',         render: 'heatmap'    },
+  { id: 'solar',         name: 'SOLAR ACCESS',            unit: 'kWh/m²·yr',    render: 'polygon'    },
+  { id: 'carbon',        name: 'CARBON FOOTPRINT',        unit: 'tCO₂e',        render: 'rings'      },
+  { id: 'vegetation',    name: 'VEGETATION COVER',        unit: 'm² green',      render: 'fill'       },
+  { id: 'biodiversity',  name: 'BIODIVERSITY',            unit: 'occurrences',   render: 'points'     },
+  { id: 'shadow',        name: 'SHADOW IMPACT',           unit: 'm shadow',      render: 'polygon'    },
   { id: 'power',         name: 'POWER SUPPLY',            unit: 'MWh/yr',        render: 'flow'       },
   { id: 'pedestrian',    name: 'PEDESTRIAN TRAFFIC',      unit: 'visitors/day',  render: 'points+flow'},
   { id: 'rent',          name: 'RENT & PROPERTY VALUE',   unit: '$/sf·mo',       render: 'rings'      },

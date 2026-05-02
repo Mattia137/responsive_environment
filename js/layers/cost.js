@@ -24,8 +24,8 @@ export function showLayer(state) {
     type: 'fill',
     source: srcId,
     paint: {
-      'fill-color':   state.mode === 'after' ? '#ff5a1f' : '#d4a857',
-      'fill-opacity': state.mode === 'after' ? 0.15 : 0.06,
+      'fill-color':   state.timeStep > 0 ? '#ff5a1f' : '#d4a857',
+      'fill-opacity': state.timeStep > 0 ? 0.15 : 0.06,
     },
   });
 
@@ -34,10 +34,10 @@ export function showLayer(state) {
     type: 'line',
     source: srcId,
     paint: {
-      'line-color':     state.mode === 'after' ? '#ff5a1f' : '#d4a857',
+      'line-color':     state.timeStep > 0 ? '#ff5a1f' : '#d4a857',
       'line-dasharray': [4, 3],
       'line-width':     1,
-      'line-opacity':   state.mode === 'after' ? 0.7 : 0.3,
+      'line-opacity':   state.timeStep > 0 ? 0.7 : 0.3,
     },
   });
 }

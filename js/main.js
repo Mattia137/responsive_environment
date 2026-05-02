@@ -21,7 +21,7 @@ import { initWrapInspector, toggle as toggleWrapInspector, syncActiveLayer } fro
    ================================================================ */
 const state = {
   theme: 'dark',
-  mode: 'before',          // 'before' | 'after'
+  timeStep: 0,          // 0: Baseline, 1: Build, 2: Open, 3: Settled, 4: Horizon
   activeLayerIds: new Set(),
   massing: {
     loaded: false,
@@ -78,8 +78,8 @@ async function boot() {
   /* 2. Map */
   initMap(state);
 
-  /* 3. Before/After toggle */
-  wireStateToggle();
+  /* 3. Time Scrubber */
+  wireTimeScrubber();
 
   /* 4. Massing controls */
   initMassingControls(state);
@@ -148,32 +148,53 @@ async function boot() {
   /* 10. Keyboard shortcuts */
   document.addEventListener('keydown', e => {
     if (['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) return;
-    if (e.code === 'Space') { e.preventDefault(); toggleMode(); }
+    if (e.code === 'ArrowLeft') { e.preventDefault(); setTimeStep(Math.max(0, state.timeStep - 1)); }
+    if (e.code === 'ArrowRight') { e.preventDefault(); setTimeStep(Math.min(4, state.timeStep + 1)); }
     if (e.code === 'KeyW')  { e.preventDefault(); toggleWrapInspector(); }
   });
 }
 
 /* ================================================================
-   BEFORE / AFTER TOGGLE
+   TIME SCRUBBER
    ================================================================ */
-function wireStateToggle() {
-  const btnBefore = document.getElementById('btn-before');
-  const btnAfter  = document.getElementById('btn-after');
-  btnBefore?.addEventListener('click', () => setMode('before'));
-  btnAfter?.addEventListener('click',  () => setMode('after'));
+function wireTimeScrubber() {
+  const steps = document.querySelectorAll('.scrubber-step');
+  steps.forEach(btn => {
+    btn.addEventListener('click', () => {
+      setTimeStep(parseInt(btn.getAttribute('data-step'), 10));
+    });
+  });
 }
 
-function setMode(mode) {
-  state.mode = mode;
-  document.getElementById('btn-before').classList.toggle('active', mode === 'before');
-  document.getElementById('btn-after').classList.toggle('active',  mode === 'after');
-  document.getElementById('scenario-tag').textContent = mode === 'before' ? 'BASELINE' : '+ MASSING · 5YR';
-  document.getElementById('mode-tag').textContent = mode === 'before' ? 'CONTEXT' : 'PROJECTION';
+function setTimeStep(step) {
+  state.timeStep = step;
+  
+  const steps = document.querySelectorAll('.scrubber-step');
+  const fill = document.getElementById('scrubber-fill');
+  
+  steps.forEach((btn, idx) => {
+    btn.classList.toggle('active', idx === step);
+    btn.classList.toggle('filled', idx < step);
+  });
+  
+  if (fill) {
+    fill.style.width = `${(step / 4) * 100}%`;
+  }
+  
+  const tags = [
+    'BASELINE',
+    'CONSTRUCTION · PEAK',
+    '+ MASSING · OPEN +1Y',
+    '+ MASSING · SETTLED +5Y',
+    '+ MASSING · HORIZON +20Y'
+  ];
+  const tagEl = document.getElementById('scenario-tag');
+  if (tagEl) tagEl.textContent = tags[step];
+  
+  const modeTag = document.getElementById('mode-tag');
+  if (modeTag) modeTag.textContent = step === 0 ? 'CONTEXT' : 'PROJECTION';
+  
   fullUpdate();
-}
-
-function toggleMode() {
-  setMode(state.mode === 'before' ? 'after' : 'before');
 }
 
 /* ================================================================
@@ -270,6 +291,7 @@ function fullUpdate() {
     geometry,
     program: state.program,
     context,
+    timeStep: state.timeStep,
   });
 
   // Render UI

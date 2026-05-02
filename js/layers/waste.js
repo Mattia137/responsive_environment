@@ -63,7 +63,7 @@ export async function render(state) {
       'heatmap-weight':    1,
       'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 12, 0.5, 16, 2, 18, 4],
       'heatmap-radius':    ['interpolate', ['linear'], ['zoom'], 12, 18, 16, 35, 18, 60],
-      'heatmap-opacity':   state.mode === 'after' ? 0.65 : 0.55,
+      'heatmap-opacity':   state.timeStep > 0 ? 0.65 : 0.55,
       'heatmap-color': [
         'interpolate', ['linear'], ['heatmap-density'],
         0,    'rgba(0,0,0,0)',
@@ -77,7 +77,7 @@ export async function render(state) {
   });
 
   /* AFTER: add operational + construction noise rings from site */
-  if (state.mode === 'after') {
+  if (state.timeStep > 0) {
     const result      = state.impactResults?.waste;
     const dBDelta     = result ? parseFloat(result.headline?.delta?.replace(' dB L_eq','') || '0') : 0;
     const ringSrcId   = `${P}-rings-src`;
@@ -138,7 +138,7 @@ export async function render(state) {
   }
 
   showLegend({
-    title: `WASTE & NOISE${state.mode === 'after' ? ' — PROJECTED' : ' — BASELINE (311)'}`,
+    title: `WASTE & NOISE${state.timeStep > 0 ? ' — PROJECTED' : ' — BASELINE (311)'}`,
     gradient: {
       stops: [
         { color: '#313695', at: 0 },
@@ -149,7 +149,7 @@ export async function render(state) {
       ],
       min: 'QUIET', max: 'LOUD', unit: '311 noise density',
     },
-    items: state.mode === 'after'
+    items: state.timeStep > 0
       ? [
           { color: '#a50026', label: 'LOADING DOCK',   value: '78 dB' },
           { color: '#f46d43', label: '140m FALLOFF',   value: '72 dB' },

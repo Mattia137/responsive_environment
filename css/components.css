@@ -9,31 +9,88 @@
 .hidden { display: none !important; }
 
 /* --------------------------------------------------------------
-   BEFORE / AFTER toggle
+   Time Scrubber (Phase 4)
    -------------------------------------------------------------- */
-.state-toggle {
-  display: inline-flex;
-  background: var(--bg-2);
-  border: 1px solid var(--line-bright);
-  padding: 2px;
-  border-radius: 2px;
+.time-scrubber {
+  display: flex;
+  position: relative;
+  align-items: center;
+  justify-content: space-between;
+  width: 380px;
+  margin: 0 20px;
 }
-.state-btn {
-  background: transparent;
-  border: none;
-  color: var(--ink-dim);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  padding: 6px 14px;
-  cursor: pointer;
-  transition: background 150ms, color 150ms;
-  text-transform: uppercase;
+.scrubber-track {
+  position: absolute;
+  top: 50%;
+  left: 7px;
+  right: 7px;
+  height: 2px;
+  background: var(--line-bright);
+  transform: translateY(-50%);
+  z-index: 1;
 }
-.state-btn.active {
+.scrubber-fill {
+  position: absolute;
+  top: 50%;
+  left: 7px;
+  height: 2px;
   background: var(--accent);
-  color: var(--bg);
+  transform: translateY(-50%);
+  z-index: 2;
+  transition: width 200ms ease;
+  width: 0%;
 }
-.state-btn:hover:not(.active) { color: var(--ink); }
+.scrubber-step {
+  position: relative;
+  background: var(--bg);
+  border: 2px solid var(--line-bright);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 3;
+  padding: 0;
+  transition: border-color 200ms ease, background 200ms ease;
+}
+.scrubber-step.filled {
+  border-color: var(--accent);
+  background: var(--bg);
+}
+.scrubber-step.active {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+.scrubber-step:hover {
+  border-color: var(--ink-faint);
+}
+.scrubber-step.active:hover {
+  border-color: var(--accent-dim);
+  background: var(--accent-dim);
+}
+.scrubber-label {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  color: var(--ink-dim);
+  white-space: nowrap;
+  transition: color 200ms;
+}
+.scrubber-sub {
+  position: absolute;
+  bottom: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  color: var(--ink-faint);
+}
+.scrubber-step.active .scrubber-label {
+  color: var(--accent);
+  font-weight: bold;
+}
 
 /* --------------------------------------------------------------
    Theme toggle

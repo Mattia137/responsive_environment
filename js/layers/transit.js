@@ -68,7 +68,7 @@ export function render(state) {
   const dailyDelta   = result?.headline
     ? parseInt(result.headline.value?.replace(/[^0-9]/g, '') || '0')
     : 0;
-  const isAfter      = state.mode === 'after';
+  const isAfter      = state.timeStep > 0;
 
   /* --- Subway line GeoJSON --- */
   const lineFeatures = HY_SUBWAY_LINES.map(line => ({

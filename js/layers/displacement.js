@@ -26,7 +26,7 @@ export function showLayer(state) {
           ...f,
           properties: {
             ...f.properties,
-            value: Math.random() * 0.6 + (state.mode === 'after' ? 0.25 : 0),
+            value: Math.random() * 0.6 + (state.timeStep > 0 ? 0.25 : 0),
           },
         }));
     }
@@ -45,11 +45,11 @@ export function showLayer(state) {
       'fill-color': [
         'interpolate', ['linear'], ['coalesce', ['get', 'value'], 0],
         0,   'rgba(0,0,0,0)',
-        0.3, state.mode === 'after' ? '#d4a857' : '#4a4742',
-        0.6, state.mode === 'after' ? '#e06c75' : '#8a877f',
-        1,   state.mode === 'after' ? '#c04050' : '#aaa69e',
+        0.3, state.timeStep > 0 ? '#d4a857' : '#4a4742',
+        0.6, state.timeStep > 0 ? '#e06c75' : '#8a877f',
+        1,   state.timeStep > 0 ? '#c04050' : '#aaa69e',
       ],
-      'fill-opacity': state.mode === 'after' ? 0.45 : 0.2,
+      'fill-opacity': state.timeStep > 0 ? 0.45 : 0.2,
       'fill-outline-color': '#2d2b27',
     },
   });

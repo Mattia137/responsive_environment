@@ -53,9 +53,29 @@
       <ul class="geo-results" id="geo-results"></ul>
     </div>
 
-    <div class="state-toggle" role="group" aria-label="Scenario state">
-      <button id="btn-before" class="state-btn active" data-state="before">BEFORE</button>
-      <button id="btn-after"  class="state-btn"        data-state="after">AFTER</button>
+    <div class="time-scrubber" id="time-scrubber" role="group" aria-label="Time Horizon">
+      <div class="scrubber-track"></div>
+      <div class="scrubber-fill" id="scrubber-fill"></div>
+      <button class="scrubber-step active" data-step="0" aria-label="Baseline">
+        <span class="scrubber-label">BASELINE</span>
+        <span class="scrubber-sub">T0</span>
+      </button>
+      <button class="scrubber-step" data-step="1" aria-label="Construction">
+        <span class="scrubber-label">BUILD</span>
+        <span class="scrubber-sub">T1</span>
+      </button>
+      <button class="scrubber-step" data-step="2" aria-label="Open +1Y">
+        <span class="scrubber-label">OPEN</span>
+        <span class="scrubber-sub">+1Y</span>
+      </button>
+      <button class="scrubber-step" data-step="3" aria-label="Settled +5Y">
+        <span class="scrubber-label">SETTLED</span>
+        <span class="scrubber-sub">+5Y</span>
+      </button>
+      <button class="scrubber-step" data-step="4" aria-label="Horizon +20Y">
+        <span class="scrubber-label">HORIZON</span>
+        <span class="scrubber-sub">+20Y</span>
+      </button>
     </div>
 
     <div class="header-meta">

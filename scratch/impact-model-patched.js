@@ -195,14 +195,8 @@ export function projectPower(geometry, program, context, timeStep) {
       { label: 'Annual energy',    baseline: '0 MWh',     projected: (annual_kWh/1000).toFixed(0)+' MWh', delta: `+${(annual_kWh/1000).toFixed(0)}`, sign:'neg', provenance: 'BENCHMARK' },
       { label: 'Peak demand',      baseline: '0 MW',      projected: peak_MW.toFixed(2)+' MW',          delta: `+${peak_MW.toFixed(2)}`,           sign:'neg', provenance: 'BENCHMARK' },
       { label: 'Operational CO₂e', baseline: '0 t/yr',    projected: co2_tonnes.toFixed(0)+' t/yr',     delta: `+${co2_tonnes.toFixed(0)}`,        sign:'neg', provenance: 'BENCHMARK' },
-      { label: 'LL97 2024–29 limit', baseline: '—', projected: '0.758 kgCO₂e/m²·yr',          delta: (co2_tonnes*1000/gfa).toFixed(2)+' vs. limit', sign:'neu', provenance: 'BENCHMARK' },
-      (timeStep === 4 && context.baseline.climateT4) ? {
-        label: 'Grid Baseline Context',
-        baseline: '2024 Climate',
-        projected: `CMIP6 2046: T_max ${context.baseline.climateT4.t_max.toFixed(1)}°C`,
-        delta: 'Modeled Baseline', sign: 'neu', provenance: 'MODELED'
-      } : null
-    ].filter(Boolean),
+      { label: 'LL97 2024–29 limit (cultural)', baseline: '—', projected: '0.758 kgCO₂e/m²·yr',          delta: (co2_tonnes*1000/gfa).toFixed(2)+' vs. limit', sign:'neu', provenance: 'BENCHMARK' },
+    ],
     spatial: {
       type: 'flow',
       features: generateFeederFlowFeatures(context.site_lat_lon, [-73.9997, 40.7498], peak_MW),

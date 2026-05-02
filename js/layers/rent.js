@@ -63,9 +63,9 @@ export function render(state) {
   const siteLon    = t.anchor_lon ?? -74.0063;
   const gfa        = state.massing?.geometry?.total_gfa ?? state.program?.gfa_m2 ?? 13750;
   const scaleFactor = Math.sqrt(gfa / 15000);
-  const isAfter    = state.mode === 'after';
+  const isAfter    = state.timeStep > 0;
 
-  const features = buildRentFeatures(siteLat, siteLon, scaleFactor, state.mode);
+  const features = buildRentFeatures(siteLat, siteLon, scaleFactor, state.timeStep);
   const srcId    = `${P}-src`;
   ensureSource(srcId, { type: 'FeatureCollection', features });
 

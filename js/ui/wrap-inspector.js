@@ -88,11 +88,19 @@ const EDITORIAL_CALLOUT = `
   </div>
 </div>`;
 
+const EDITORIAL_TIME_CALLOUT = `
+<div class="wrap-editorial" style="margin-top: 16px;">
+  <div class="wrap-editorial-title">TIME IS NOT A MEASUREMENT</div>
+  <p class="wrap-editorial-text">
+    Future projections are not predictions; they are conditional model outputs whose conditions are themselves contested.
+  </p>
+</div>`;
+
 function _renderContent() {
   const body = _panel?.querySelector('.wrap-inspector-body');
   if (!body) return;
 
-  body.innerHTML = EDITORIAL_CALLOUT + LAYERS.map((L, i) => {
+  body.innerHTML = EDITORIAL_CALLOUT + EDITORIAL_TIME_CALLOUT + LAYERS.map((L, i) => {
     const notes = WRAP_NOTES[L.id];
     if (!notes) return `<section class="wrap-section" data-layer-id="${L.id}">
       <div class="wrap-section-head">
