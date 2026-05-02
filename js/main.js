@@ -119,8 +119,8 @@ async function boot() {
           const gfaEl = document.getElementById('in-gfa');
           if (gfaEl) gfaEl.value = gfa;
         }
-        // Cinematic zoom-in from globe to site
-        flyToSite();
+        // Cinematic zoom-in from globe to site removed to keep USA view
+        // flyToSite();
       } catch (err) {
         console.warn('[main] default GLB load failed:', err);
         document.getElementById('massing-status').textContent = 'NOT LOADED';

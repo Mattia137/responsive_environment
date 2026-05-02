@@ -69,12 +69,10 @@ function _applyThemeBaseStyling() {
   const mapStyle = map.getStyle();
   if (!mapStyle || !mapStyle.layers) return;
 
-  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-
-  const landColor   = isLight ? '#f0ede4' : '#080808';
-  const waterColor  = isLight ? '#d8d4cc' : '#000000';
-  const streetColor = isLight ? '#e0dbd0' : '#111111';
-  const buildColor  = isLight ? '#c8c2b2' : '#1a1a1a'; // clear contrast in both themes
+  const landColor   = '#000000';
+  const waterColor  = '#000000';
+  const streetColor = 'rgba(255, 255, 255, 0.04)'; // --ln1
+  const buildColor  = 'rgba(255, 255, 255, 0.07)'; // --ln2
 
   mapStyle.layers.forEach(l => {
     // Kill all symbol/label layers
@@ -96,7 +94,7 @@ function _applyThemeBaseStyling() {
                   : id.includes('building') ? buildColor
                   : landColor;
       try { map.setPaintProperty(id, 'fill-color', color); } catch (e) {}
-      try { map.setPaintProperty(id, 'fill-outline-color', isLight ? '#d0c8b8' : '#1a1a1a'); } catch (e) {}
+      try { map.setPaintProperty(id, 'fill-outline-color', 'rgba(255, 255, 255, 0.04)'); } catch (e) {}
       return;
     }
 

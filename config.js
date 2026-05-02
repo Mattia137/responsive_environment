@@ -5,7 +5,7 @@
 
 export const CONFIG = {
   /* REQUIRED — add your key here for local dev; Vercel sets it via /api/config */
-  MAPTILER_KEY: '',  // ← paste your key here: https://cloud.maptiler.com/account/keys/
+  MAPTILER_KEY: 'WWwr7EfWrAAHDMrvyQMk',  // ← paste your key here: https://cloud.maptiler.com/account/keys/
 
   /* OPTIONAL — layer works without these, using benchmark fallbacks */
   AIRNOW_KEY:   '',                                // https://docs.airnowapi.org/account/request/
@@ -13,9 +13,9 @@ export const CONFIG = {
   YELP_KEY:     '',                                // https://www.yelp.com/developers/v3 (induced demand)
   CENSUS_KEY:   '',                                // https://api.census.gov/data/key_signup.html (ACS)
 
-  /* GLOBE INTRO — camera starts here every load (full Earth visible) */
-  DEFAULT_CENTER: [0, 20],
-  DEFAULT_ZOOM:   1.5,
+  /* GLOBE INTRO — camera starts here every load (USA visible) */
+  DEFAULT_CENTER: [-98.5795, 39.8283],
+  DEFAULT_ZOOM:   3.5,
   DEFAULT_PITCH:  0,
   DEFAULT_BEARING: 0,
 
