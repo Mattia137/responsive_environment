@@ -70,9 +70,9 @@ function _applyThemeBaseStyling() {
   if (!mapStyle || !mapStyle.layers) return;
 
   const landColor   = '#000000';
-  const waterColor  = '#000000';
-  const streetColor = 'rgba(255, 255, 255, 0.04)'; // --ln1
-  const buildColor  = 'rgba(255, 255, 255, 0.07)'; // --ln2
+  const waterColor  = '#0a0a0a';
+  const streetColor = 'rgba(255, 255, 255, 0.1)'; // brighter for visibility
+  const buildColor  = 'rgba(255, 255, 255, 0.07)';
 
   mapStyle.layers.forEach(l => {
     // Kill all symbol/label layers
@@ -107,7 +107,10 @@ function _applyThemeBaseStyling() {
     }
 
     if (type === 'line') {
-      const color = id.includes('water') ? waterColor : streetColor;
+      let color = streetColor;
+      if (id.includes('water')) color = waterColor;
+      if (id.includes('boundary') || id.includes('admin')) color = 'rgba(255, 255, 255, 0.3)';
+      
       try { map.setPaintProperty(id, 'line-color', color); } catch (e) {}
       return;
     }
