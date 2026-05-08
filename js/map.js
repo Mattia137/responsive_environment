@@ -67,54 +67,7 @@ function _applyThemeBaseStyling() {
   const mapStyle = map.getStyle();
   if (!mapStyle || !mapStyle.layers) return;
 
-  const landColor   = '#000000';
-  const waterColor  = '#0a0a0a';
-  const streetColor = 'rgba(255, 255, 255, 0.1)'; // brighter for visibility
-  const buildColor  = 'rgba(255, 255, 255, 0.07)';
-
-  mapStyle.layers.forEach(l => {
-    // Kill all symbol/label layers
-    if (l.type === 'symbol') {
-      try { map.setLayoutProperty(l.id, 'visibility', 'none'); } catch (e) {}
-      return;
-    }
-
-    const id = l.id;
-    const type = l.type;
-
-    if (type === 'background') {
-      try { map.setPaintProperty(id, 'background-color', landColor); } catch (e) {}
-      return;
-    }
-
-    if (type === 'fill') {
-      const color = id.includes('water') ? waterColor
-                  : id.includes('building') ? buildColor
-                  : landColor;
-      try { map.setPaintProperty(id, 'fill-color', color); } catch (e) {}
-      try { map.setPaintProperty(id, 'fill-outline-color', 'rgba(255, 255, 255, 0.04)'); } catch (e) {}
-      return;
-    }
-
-    if (type === 'fill-extrusion') {
-      try {
-        map.setPaintProperty(id, 'fill-extrusion-color', buildColor);
-        map.setPaintProperty(id, 'fill-extrusion-opacity', 0.85);
-      } catch (e) {}
-      return;
-    }
-
-    if (type === 'line') {
-      let color = streetColor;
-      if (id.includes('water')) color = waterColor;
-      if (id.includes('boundary') || id.includes('admin')) color = 'rgba(255, 255, 255, 0.3)';
-      
-      try { map.setPaintProperty(id, 'line-color', color); } catch (e) {}
-      return;
-    }
-  });
-
-  // Ensure 3D buildings exist — add fallback if the base style lacks extrusions
+  // Light style renders naturally — only add 3D buildings if the style omits them
   const has3D = mapStyle.layers.some(l => l.type === 'fill-extrusion');
   if (!has3D) {
     try {
@@ -125,10 +78,10 @@ function _applyThemeBaseStyling() {
         'source-layer': 'building',
         minzoom: 14,
         paint: {
-          'fill-extrusion-color':   buildColor,
+          'fill-extrusion-color':   'rgba(220, 210, 200, 0.9)',
           'fill-extrusion-height':  ['coalesce', ['get', 'render_height'], 10],
           'fill-extrusion-base':    ['coalesce', ['get', 'render_min_height'], 0],
-          'fill-extrusion-opacity': 0.85,
+          'fill-extrusion-opacity': 0.7,
         },
       });
     } catch (e) {}
@@ -202,11 +155,11 @@ function _enableGlobe() {
   try { map.setProjection('globe'); } catch (e) {}
   try {
     map.setFog({
-      color:            'rgb(10, 10, 10)',
-      'high-color':     'rgb(15, 25, 60)',
-      'horizon-blend':  0.04,
-      'space-color':    'rgb(4, 4, 12)',
-      'star-intensity': 0.7,
+      color:           'rgb(240, 236, 228)',
+      'high-color':    'rgb(180, 210, 240)',
+      'horizon-blend': 0.04,
+      'space-color':   'rgb(200, 220, 245)',
+      'star-intensity': 0,
     });
   } catch (e) {}
 }
