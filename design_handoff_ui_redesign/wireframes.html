@@ -1,0 +1,2076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ALLSPARK // IMPACT — UI Wireframes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #e8e4df; font-family: 'DM Sans', sans-serif; }
+
+    /* ── shared wireframe tokens ── */
+    :root {
+      --wf-bg:      oklch(97% 0.008 60);
+      --wf-bg2:     oklch(94% 0.010 58);
+      --wf-bg3:     oklch(91% 0.012 56);
+      --wf-line:    oklch(80% 0.010 55);
+      --wf-line2:   oklch(72% 0.012 54);
+      --wf-ink:     oklch(22% 0.010 50);
+      --wf-ink2:    oklch(42% 0.010 50);
+      --wf-ink3:    oklch(62% 0.010 50);
+      --wf-orange:  oklch(62% 0.18 38);
+      --wf-orange2: oklch(72% 0.12 38);
+      --wf-orange3: oklch(92% 0.06 55);
+      /* layer category colors */
+      --c-env:  oklch(60% 0.14 150);
+      --c-eco:  oklch(58% 0.14 245);
+      --c-log:  oklch(55% 0.14 30);
+    }
+
+    /* sketchy annotation style */
+    .sketch-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      font-weight: 300;
+      color: var(--wf-ink3);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .annotation {
+      position: absolute;
+      font-family: 'DM Mono', monospace;
+      font-size: 8.5px;
+      font-weight: 300;
+      color: var(--wf-orange);
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+    .annotation::before {
+      content: '→ ';
+      opacity: 0.6;
+    }
+
+    /* map placeholder */
+    .map-ph {
+      background: repeating-linear-gradient(
+        0deg,
+        var(--wf-bg2) 0px,
+        var(--wf-bg2) 1px,
+        transparent 1px,
+        transparent 28px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        var(--wf-bg2) 0px,
+        var(--wf-bg2) 1px,
+        transparent 1px,
+        transparent 28px
+      );
+      background-color: var(--wf-bg);
+      position: relative;
+    }
+
+    /* ── WIREFRAME SHELL ── */
+    .wf {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      background: var(--wf-bg);
+      overflow: hidden;
+      border: 1px solid var(--wf-line);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+    }
+
+    /* ────────────────────────────────────────────
+       DIRECTION A  — Studio: icon sidebar + floats
+       ──────────────────────────────────────────── */
+
+    /* Header A */
+    .hdr-a {
+      position: absolute; top: 0; left: 0; right: 0; height: 44px;
+      background: var(--wf-bg);
+      border-bottom: 1px solid var(--wf-line);
+      display: flex; align-items: center; gap: 0;
+      z-index: 20;
+    }
+    .hdr-a-brand {
+      padding: 0 18px;
+      display: flex; align-items: baseline; gap: 5px;
+      border-right: 1px solid var(--wf-line);
+      height: 100%;
+      align-items: center;
+    }
+    .hdr-a-brand .name {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
+      color: var(--wf-ink); text-transform: uppercase;
+    }
+    .hdr-a-brand .slash { color: var(--wf-orange); margin: 0 2px; }
+    .hdr-a-brand .sub {
+      font-size: 9px; color: var(--wf-ink3); letter-spacing: 0.08em; margin-left: 8px;
+    }
+
+    .hdr-a-scrubber {
+      flex: 1; display: flex; align-items: center; padding: 0 28px; gap: 0;
+      position: relative; height: 100%;
+    }
+    .scrub-track {
+      position: absolute; top: 50%; left: 28px; right: 28px; height: 1px;
+      background: var(--wf-line2); transform: translateY(-50%);
+    }
+    .scrub-fill {
+      position: absolute; top: 50%; left: 28px; width: 25%; height: 1.5px;
+      background: var(--wf-orange); transform: translateY(-50%);
+    }
+    .scrub-steps {
+      position: relative; z-index: 2;
+      width: 100%; display: flex; justify-content: space-between; align-items: center;
+    }
+    .scrub-step {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      cursor: pointer;
+    }
+    .scrub-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--wf-bg); border: 1.5px solid var(--wf-line2);
+    }
+    .scrub-step.active .scrub-dot {
+      background: var(--wf-orange); border-color: var(--wf-orange);
+    }
+    .scrub-step.filled .scrub-dot { border-color: var(--wf-orange); }
+    .scrub-lbl {
+      font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--wf-ink3); margin-top: -12px;
+    }
+    .scrub-sub { font-size: 8px; color: var(--wf-ink3); margin-top: 14px; position: absolute; }
+    .scrub-step.active .scrub-lbl { color: var(--wf-orange); font-weight: 500; }
+
+    .hdr-a-right {
+      display: flex; align-items: center; gap: 16px; padding: 0 20px;
+      border-left: 1px solid var(--wf-line); height: 100%;
+    }
+    .geo-pill {
+      display: flex; align-items: center; gap: 7px;
+      background: var(--wf-bg2); border: 1px solid var(--wf-line);
+      padding: 5px 10px; font-size: 10px; color: var(--wf-ink2);
+      min-width: 180px;
+    }
+    .geo-pill svg { color: var(--wf-ink3); flex-shrink: 0; }
+    .meta-dots {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 9px; letter-spacing: 0.08em; color: var(--wf-ink3);
+    }
+    .live-dot {
+      width: 5px; height: 5px; border-radius: 50%; background: var(--wf-orange);
+      animation: blink 2.4s ease infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+    /* Icon sidebar A */
+    .sidebar-a {
+      position: absolute; top: 44px; left: 0; bottom: 28px; width: 48px;
+      background: var(--wf-bg);
+      border-right: 1px solid var(--wf-line);
+      display: flex; flex-direction: column; align-items: center;
+      padding: 12px 0; gap: 4px;
+      z-index: 20;
+    }
+    .sidebar-icon {
+      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+      border-radius: 4px; cursor: pointer; position: relative;
+      color: var(--wf-ink3); transition: all 0.12s;
+      border: 1px solid transparent;
+    }
+    .sidebar-icon:hover { background: var(--wf-bg2); color: var(--wf-ink); }
+    .sidebar-icon.active {
+      background: var(--wf-orange3);
+      border-color: var(--wf-orange2);
+      color: var(--wf-orange);
+    }
+    .sidebar-icon .icon-label {
+      position: absolute; left: calc(100% + 8px); top: 50%; transform: translateY(-50%);
+      background: var(--wf-ink); color: white; font-size: 9px; padding: 3px 7px;
+      white-space: nowrap; letter-spacing: 0.06em; text-transform: uppercase;
+      pointer-events: none; opacity: 0;
+    }
+    .sidebar-divider {
+      width: 24px; height: 1px; background: var(--wf-line); margin: 6px 0;
+    }
+
+    /* Floating panel A */
+    .float-panel {
+      position: absolute; background: var(--wf-bg);
+      border: 1px solid var(--wf-line);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      z-index: 15;
+    }
+    .float-panel-hdr {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px 8px;
+      border-bottom: 1px solid var(--wf-line);
+    }
+    .float-panel-title {
+      font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--wf-ink2); font-weight: 500;
+    }
+    .float-panel-close {
+      width: 18px; height: 18px; display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--wf-line); color: var(--wf-ink3); cursor: pointer; font-size: 10px;
+    }
+
+    /* Layer category group A */
+    .layer-cat {
+      padding: 6px 14px 2px;
+    }
+    .layer-cat-head {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 8.5px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--wf-ink3); padding: 6px 0 4px; cursor: pointer;
+      border-bottom: 1px solid var(--wf-line);
+    }
+    .cat-dot {
+      width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+    }
+    .cat-chevron { margin-left: auto; font-size: 8px; color: var(--wf-ink3); }
+    .layer-row-a {
+      display: flex; align-items: center; gap: 8px; padding: 6px 0;
+      font-size: 10px; color: var(--wf-ink2); cursor: pointer;
+      border-bottom: 1px solid transparent;
+    }
+    .layer-row-a:hover { color: var(--wf-ink); }
+    .layer-row-a.on { color: var(--wf-ink); }
+    .layer-toggle {
+      width: 10px; height: 10px; border-radius: 2px;
+      border: 1.5px solid var(--wf-line2); flex-shrink: 0;
+    }
+    .layer-toggle.on { background: var(--wf-orange); border-color: var(--wf-orange); }
+    .layer-swatch {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    }
+    .layer-delta { margin-left: auto; font-size: 9px; font-variant-numeric: tabular-nums; }
+    .layer-delta.pos { color: oklch(50% 0.14 150); }
+    .layer-delta.neg { color: oklch(50% 0.16 25); }
+
+    /* Inline map annotation A */
+    .map-ann {
+      position: absolute; pointer-events: none;
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .ann-line {
+      width: 1px; background: var(--wf-orange2);
+      margin-left: 4px;
+    }
+    .ann-card {
+      background: var(--wf-bg);
+      border: 1px solid var(--wf-line);
+      padding: 7px 10px; min-width: 100px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .ann-label { font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--wf-ink3); margin-bottom: 3px; }
+    .ann-value {
+      font-family: 'Instrument Serif', serif;
+      font-size: 22px; line-height: 1; letter-spacing: -0.02em; color: var(--wf-ink);
+    }
+    .ann-unit { font-family: 'DM Sans', sans-serif; font-size: 9px; color: var(--wf-ink3); margin-left: 3px; }
+    .ann-delta { font-size: 9px; color: oklch(50% 0.14 150); margin-top: 3px; }
+
+    /* Footer A */
+    .footer-a {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 28px;
+      background: var(--wf-bg); border-top: 1px solid var(--wf-line);
+      display: flex; align-items: center; padding: 0 14px; gap: 24px;
+      z-index: 20; overflow: hidden;
+    }
+    .footer-item { font-size: 9px; letter-spacing: 0.08em; color: var(--wf-ink3); }
+    .footer-item strong { color: var(--wf-ink); font-weight: 500; }
+    .footer-sep { width: 1px; height: 12px; background: var(--wf-line); }
+
+    /* ────────────────────────────────────────────
+       DIRECTION B  — Command: top toolbar + persistent left
+       ──────────────────────────────────────────── */
+
+    .hdr-b {
+      position: absolute; top: 0; left: 0; right: 0; height: 56px;
+      background: var(--wf-bg);
+      border-bottom: 1.5px solid var(--wf-line);
+      display: flex; align-items: stretch;
+      z-index: 20;
+    }
+    .hdr-b-brand {
+      display: flex; align-items: center; padding: 0 20px;
+      border-right: 1px solid var(--wf-line); gap: 6px; flex-shrink: 0;
+    }
+    .hdr-b-brand .mark {
+      font-size: 12px; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--wf-ink);
+    }
+    .hdr-b-brand .word { color: var(--wf-ink2); font-weight: 400; }
+    .hdr-b-brand .slash { color: var(--wf-orange); }
+    .hdr-b-mode {
+      display: flex; align-items: center; padding: 0 20px; gap: 4px;
+      border-right: 1px solid var(--wf-line);
+    }
+    .mode-btn {
+      padding: 6px 14px; font-size: 10px; letter-spacing: 0.08em;
+      text-transform: uppercase; cursor: pointer; background: transparent;
+      border: 1px solid transparent; color: var(--wf-ink3); border-radius: 3px;
+      font-family: 'DM Sans', sans-serif; white-space: nowrap;
+    }
+    .mode-btn.active {
+      background: var(--wf-orange3);
+      border-color: var(--wf-orange2); color: var(--wf-orange);
+      font-weight: 500;
+    }
+    .hdr-b-scrubber {
+      flex: 1; display: flex; align-items: center; padding: 0 32px;
+      position: relative; gap: 0;
+    }
+    .hdr-b-right {
+      display: flex; align-items: center; gap: 12px; padding: 0 16px;
+      border-left: 1px solid var(--wf-line); flex-shrink: 0;
+    }
+
+    /* Left panel B */
+    .lpanel-b {
+      position: absolute; top: 56px; left: 0; bottom: 32px; width: 280px;
+      background: var(--wf-bg); border-right: 1px solid var(--wf-line);
+      display: flex; flex-direction: column;
+      z-index: 10; overflow: hidden;
+    }
+    .lpanel-b-tabs {
+      display: flex; border-bottom: 1px solid var(--wf-line); flex-shrink: 0;
+    }
+    .lpanel-tab {
+      flex: 1; padding: 9px 6px; font-size: 9px; letter-spacing: 0.1em;
+      text-transform: uppercase; text-align: center; cursor: pointer;
+      color: var(--wf-ink3); border-bottom: 2px solid transparent;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .lpanel-tab.active { color: var(--wf-orange); border-bottom-color: var(--wf-orange); }
+    .lpanel-b-body {
+      flex: 1; overflow-y: auto; padding: 0;
+    }
+
+    /* Category group B */
+    .cat-group {
+      border-bottom: 1px solid var(--wf-line);
+    }
+    .cat-group-hdr {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px 9px; cursor: pointer;
+      background: var(--wf-bg2);
+    }
+    .cat-group-name {
+      font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--wf-ink2); font-weight: 600; flex: 1;
+    }
+    .cat-count { font-size: 8.5px; color: var(--wf-ink3); }
+    .cat-group-layers { padding: 4px 0; }
+    .layer-b {
+      display: flex; align-items: center; gap: 9px;
+      padding: 7px 16px; cursor: pointer;
+      transition: background 0.1s;
+    }
+    .layer-b:hover { background: var(--wf-bg2); }
+    .layer-b.on { background: var(--wf-orange3); }
+    .layer-b-chk {
+      width: 12px; height: 12px; border: 1.5px solid var(--wf-line2);
+      border-radius: 2px; flex-shrink: 0;
+    }
+    .layer-b.on .layer-b-chk { background: var(--wf-orange); border-color: var(--wf-orange); }
+    .layer-b-sw { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .layer-b-name { flex: 1; font-size: 10.5px; color: var(--wf-ink); }
+    .layer-b.on .layer-b-name { font-weight: 500; }
+    .layer-b-val { font-size: 9px; color: var(--wf-ink3); font-variant-numeric: tabular-nums; }
+
+    /* Right panel B */
+    .rpanel-b {
+      position: absolute; top: 56px; right: 0; bottom: 32px; width: 300px;
+      background: var(--wf-bg); border-left: 1px solid var(--wf-line);
+      display: flex; flex-direction: column;
+      z-index: 10;
+    }
+    .rpanel-b-hdr {
+      padding: 14px 18px 10px; border-bottom: 1px solid var(--wf-line); flex-shrink: 0;
+    }
+    .rpanel-b-title { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--wf-ink2); font-weight: 600; margin-bottom: 3px; }
+    .rpanel-b-sub { font-size: 9px; color: var(--wf-ink3); }
+    .rpanel-collapse {
+      position: absolute; left: -14px; top: 50%; transform: translateY(-50%);
+      width: 14px; height: 32px; background: var(--wf-bg);
+      border: 1px solid var(--wf-line); border-right: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--wf-ink3); font-size: 9px;
+    }
+
+    /* Readout cards B */
+    .rcard {
+      padding: 14px 18px; border-bottom: 1px solid var(--wf-line);
+    }
+    .rcard-label { font-size: 8.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--wf-ink3); margin-bottom: 8px; }
+    .rcard-big {
+      font-family: 'Instrument Serif', serif;
+      font-size: 36px; line-height: 1; letter-spacing: -0.03em; color: var(--wf-ink);
+    }
+    .rcard-unit { font-family: 'DM Sans', sans-serif; font-size: 11px; color: var(--wf-ink3); margin-left: 4px; }
+    .rcard-delta { font-size: 10px; margin-top: 5px; color: oklch(50% 0.14 150); }
+    .metric-list { display: flex; flex-direction: column; gap: 0; margin-top: 4px; }
+    .metric-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 5px 0; border-bottom: 1px dashed var(--wf-line);
+      font-size: 10px; font-variant-numeric: tabular-nums;
+    }
+    .metric-item:last-child { border-bottom: none; }
+    .metric-item .ml { color: var(--wf-ink3); }
+    .metric-item .mv { color: var(--wf-ink); }
+
+    /* Control grid B */
+    .ctrl-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 12px 18px;
+    }
+    .ctrl-label {
+      display: flex; flex-direction: column; gap: 3px;
+      font-size: 8.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--wf-ink3);
+    }
+    .ctrl-field {
+      height: 28px; background: var(--wf-bg2); border: 1px solid var(--wf-line);
+      padding: 0 8px; color: var(--wf-ink); font-size: 10.5px;
+      font-family: 'DM Mono', monospace;
+    }
+    .ctrl-field.span2 { grid-column: span 2; }
+
+    .btn-pri {
+      padding: 8px 14px; background: var(--wf-orange); color: white;
+      border: none; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+      cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500;
+    }
+    .btn-sec {
+      padding: 8px 14px; background: transparent; color: var(--wf-ink2);
+      border: 1px solid var(--wf-line); font-size: 10px; letter-spacing: 0.1em;
+      text-transform: uppercase; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    }
+
+    /* Footer B */
+    .footer-b {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 32px;
+      background: var(--wf-bg); border-top: 1px solid var(--wf-line);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 18px; z-index: 20;
+    }
+    .footer-b .left { display: flex; gap: 20px; }
+    .footer-b .right { display: flex; gap: 20px; }
+    .fitem { font-size: 9px; letter-spacing: 0.06em; color: var(--wf-ink3); }
+    .fitem strong { color: var(--wf-ink); font-weight: 500; }
+
+    /* corner-bracket decoration */
+    .bracket-tl, .bracket-br {
+      position: absolute; pointer-events: none;
+    }
+    .bracket-tl { top: 10px; left: 10px; }
+    .bracket-br { bottom: 10px; right: 10px; }
+    .bracket-tl::before, .bracket-tl::after,
+    .bracket-br::before, .bracket-br::after {
+      content: ''; position: absolute; background: var(--wf-orange2);
+    }
+    .bracket-tl::before { width: 18px; height: 1px; top: 0; left: 0; }
+    .bracket-tl::after  { width: 1px; height: 18px; top: 0; left: 0; }
+    .bracket-br::before { width: 18px; height: 1px; bottom: 0; right: 0; }
+    .bracket-br::after  { width: 1px; height: 18px; bottom: 0; right: 0; }
+
+    /* collapse handle */
+    .collapse-handle {
+      position: absolute; top: 50%; width: 14px; height: 32px;
+      background: var(--wf-bg); border: 1px solid var(--wf-line);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; z-index: 12; transform: translateY(-50%);
+      color: var(--wf-ink3); font-size: 8px;
+    }
+    .collapse-handle.left { right: -14px; border-left: none; }
+    .collapse-handle.right { left: -14px; border-right: none; }
+
+    /* SVG icons inline */
+    .ic { display: inline-block; vertical-align: middle; }
+  </style>
+</head>
+<body>
+<script type="text/babel">
+/* === DESIGN CANVAS === */
+
+// DesignCanvas.jsx — Figma-ish design canvas wrapper
+// Warm gray grid bg + Sections + Artboards + PostIt notes.
+// Artboards are reorderable (grip-drag), labels/titles are inline-editable,
+// and any artboard can be opened in a fullscreen focus overlay (←/→/Esc).
+// State persists to a .design-canvas.state.json sidecar via the host
+// bridge. No assets, no deps.
+//
+// Usage:
+//   <DesignCanvas>
+//     <DCSection id="onboarding" title="Onboarding" subtitle="First-run variants">
+//       <DCArtboard id="a" label="A · Dusk" width={260} height={480}>…</DCArtboard>
+//       <DCArtboard id="b" label="B · Minimal" width={260} height={480}>…</DCArtboard>
+//     </DCSection>
+//   </DesignCanvas>
+
+const DC = {
+  bg: '#f0eee9',
+  grid: 'rgba(0,0,0,0.06)',
+  label: 'rgba(60,50,40,0.7)',
+  title: 'rgba(40,30,20,0.85)',
+  subtitle: 'rgba(60,50,40,0.6)',
+  postitBg: '#fef4a8',
+  postitText: '#5a4a2a',
+  font: '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+};
+
+// One-time CSS injection (classes are dc-prefixed so they don't collide with
+// the hosted design's own styles).
+if (typeof document !== 'undefined' && !document.getElementById('dc-styles')) {
+  const s = document.createElement('style');
+  s.id = 'dc-styles';
+  s.textContent = [
+    '.dc-editable{cursor:text;outline:none;white-space:nowrap;border-radius:3px;padding:0 2px;margin:0 -2px}',
+    '.dc-editable:focus{background:#fff;box-shadow:0 0 0 1.5px #c96442}',
+    '[data-dc-slot]{transition:transform .18s cubic-bezier(.2,.7,.3,1)}',
+    '[data-dc-slot].dc-dragging{transition:none;z-index:10;pointer-events:none}',
+    '[data-dc-slot].dc-dragging .dc-card{box-shadow:0 12px 40px rgba(0,0,0,.25),0 0 0 2px #c96442;transform:scale(1.02)}',
+    '.dc-card{transition:box-shadow .15s,transform .15s}',
+    '.dc-card *{scrollbar-width:none}',
+    '.dc-card *::-webkit-scrollbar{display:none}',
+    '.dc-labelrow{display:flex;align-items:center;gap:4px;height:24px}',
+    '.dc-grip{cursor:grab;display:flex;align-items:center;padding:5px 4px;border-radius:4px;transition:background .12s}',
+    '.dc-grip:hover{background:rgba(0,0,0,.08)}',
+    '.dc-grip:active{cursor:grabbing}',
+    '.dc-labeltext{cursor:pointer;border-radius:4px;padding:3px 6px;display:flex;align-items:center;transition:background .12s}',
+    '.dc-labeltext:hover{background:rgba(0,0,0,.05)}',
+    '.dc-expand{position:absolute;bottom:100%;right:0;margin-bottom:5px;z-index:2;opacity:0;transition:opacity .12s,background .12s;',
+    '  width:22px;height:22px;border-radius:5px;border:none;cursor:pointer;padding:0;',
+    '  background:transparent;color:rgba(60,50,40,.7);display:flex;align-items:center;justify-content:center}',
+    '.dc-expand:hover{background:rgba(0,0,0,.06);color:#2a251f}',
+    '[data-dc-slot]:hover .dc-expand{opacity:1}',
+  ].join('\n');
+  document.head.appendChild(s);
+}
+
+const DCCtx = React.createContext(null);
+
+// ─────────────────────────────────────────────────────────────
+// DesignCanvas — stateful wrapper around the pan/zoom viewport.
+// Owns runtime state (per-section order, renamed titles/labels, focused
+// artboard). Order/titles/labels persist to a .design-canvas.state.json
+// sidecar next to the HTML. Reads go via plain fetch() so the saved
+// arrangement is visible anywhere the HTML + sidecar are served together
+// (omelette preview, direct link, downloaded zip). Writes go through the
+// host's window.omelette bridge — editing requires the omelette runtime.
+// Focus is ephemeral.
+// ─────────────────────────────────────────────────────────────
+const DC_STATE_FILE = '.design-canvas.state.json';
+
+function DesignCanvas({ children, minScale, maxScale, style }) {
+  const [state, setState] = React.useState({ sections: {}, focus: null });
+  // Hold rendering until the sidecar read settles so the saved order/titles
+  // appear on first paint (no source-order flash). didRead gates writes until
+  // the read settles so the empty initial state can't clobber a slow read;
+  // skipNextWrite suppresses the one echo-write that would otherwise follow
+  // hydration.
+  const [ready, setReady] = React.useState(false);
+  const didRead = React.useRef(false);
+  const skipNextWrite = React.useRef(false);
+
+  React.useEffect(() => {
+    let off = false;
+    fetch('./' + DC_STATE_FILE)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((saved) => {
+        if (off || !saved || !saved.sections) return;
+        skipNextWrite.current = true;
+        setState((s) => ({ ...s, sections: saved.sections }));
+      })
+      .catch(() => {})
+      .finally(() => { didRead.current = true; if (!off) setReady(true); });
+    const t = setTimeout(() => { if (!off) setReady(true); }, 150);
+    return () => { off = true; clearTimeout(t); };
+  }, []);
+
+  React.useEffect(() => {
+    if (!didRead.current) return;
+    if (skipNextWrite.current) { skipNextWrite.current = false; return; }
+    const t = setTimeout(() => {
+      window.omelette?.writeFile(DC_STATE_FILE, JSON.stringify({ sections: state.sections })).catch(() => {});
+    }, 250);
+    return () => clearTimeout(t);
+  }, [state.sections]);
+
+  // Build registries synchronously from children so FocusOverlay can read
+  // them in the same render. Only direct DCSection > DCArtboard children are
+  // walked — wrapping them in other elements opts out of focus/reorder.
+  const registry = {};     // slotId -> { sectionId, artboard }
+  const sectionMeta = {};  // sectionId -> { title, subtitle, slotIds[] }
+  const sectionOrder = [];
+  React.Children.forEach(children, (sec) => {
+    if (!sec || sec.type !== DCSection) return;
+    const sid = sec.props.id ?? sec.props.title;
+    if (!sid) return;
+    sectionOrder.push(sid);
+    const persisted = state.sections[sid] || {};
+    const srcIds = [];
+    React.Children.forEach(sec.props.children, (ab) => {
+      if (!ab || ab.type !== DCArtboard) return;
+      const aid = ab.props.id ?? ab.props.label;
+      if (!aid) return;
+      registry[`${sid}/${aid}`] = { sectionId: sid, artboard: ab };
+      srcIds.push(aid);
+    });
+    const kept = (persisted.order || []).filter((k) => srcIds.includes(k));
+    sectionMeta[sid] = {
+      title: persisted.title ?? sec.props.title,
+      subtitle: sec.props.subtitle,
+      slotIds: [...kept, ...srcIds.filter((k) => !kept.includes(k))],
+    };
+  });
+
+  const api = React.useMemo(() => ({
+    state,
+    section: (id) => state.sections[id] || {},
+    patchSection: (id, p) => setState((s) => ({
+      ...s,
+      sections: { ...s.sections, [id]: { ...s.sections[id], ...(typeof p === 'function' ? p(s.sections[id] || {}) : p) } },
+    })),
+    setFocus: (slotId) => setState((s) => ({ ...s, focus: slotId })),
+  }), [state]);
+
+  // Esc exits focus; any outside pointerdown commits an in-progress rename.
+  React.useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') api.setFocus(null); };
+    const onPd = (e) => {
+      const ae = document.activeElement;
+      if (ae && ae.isContentEditable && !ae.contains(e.target)) ae.blur();
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('pointerdown', onPd, true);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('pointerdown', onPd, true);
+    };
+  }, [api]);
+
+  return (
+    <DCCtx.Provider value={api}>
+      <DCViewport minScale={minScale} maxScale={maxScale} style={style}>{ready && children}</DCViewport>
+      {state.focus && registry[state.focus] && (
+        <DCFocusOverlay entry={registry[state.focus]} sectionMeta={sectionMeta} sectionOrder={sectionOrder} />
+      )}
+    </DCCtx.Provider>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// DCViewport — transform-based pan/zoom (internal)
+//
+// Input mapping (Figma-style):
+//   • trackpad pinch  → zoom   (ctrlKey wheel; Safari gesture* events)
+//   • trackpad scroll → pan    (two-finger)
+//   • mouse wheel     → zoom   (notched; distinguished from trackpad scroll)
+//   • middle-drag / primary-drag-on-bg → pan
+//
+// Transform state lives in a ref and is written straight to the DOM
+// (translate3d + will-change) so wheel ticks don't go through React —
+// keeps pans at 60fps on dense canvases.
+// ─────────────────────────────────────────────────────────────
+function DCViewport({ children, minScale = 0.1, maxScale = 8, style = {} }) {
+  const vpRef = React.useRef(null);
+  const worldRef = React.useRef(null);
+  const tf = React.useRef({ x: 0, y: 0, scale: 1 });
+
+  const apply = React.useCallback(() => {
+    const { x, y, scale } = tf.current;
+    const el = worldRef.current;
+    if (el) el.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${scale})`;
+  }, []);
+
+  React.useEffect(() => {
+    const vp = vpRef.current;
+    if (!vp) return;
+
+    const zoomAt = (cx, cy, factor) => {
+      const r = vp.getBoundingClientRect();
+      const px = cx - r.left, py = cy - r.top;
+      const t = tf.current;
+      const next = Math.min(maxScale, Math.max(minScale, t.scale * factor));
+      const k = next / t.scale;
+      // keep the world point under the cursor fixed
+      t.x = px - (px - t.x) * k;
+      t.y = py - (py - t.y) * k;
+      t.scale = next;
+      apply();
+    };
+
+    // Mouse-wheel vs trackpad-scroll heuristic. A physical wheel sends
+    // line-mode deltas (Firefox) or large integer pixel deltas with no X
+    // component (Chrome/Safari, typically multiples of 100/120). Trackpad
+    // two-finger scroll sends small/fractional pixel deltas, often with
+    // non-zero deltaX. ctrlKey is set by the browser for trackpad pinch.
+    const isMouseWheel = (e) =>
+      e.deltaMode !== 0 ||
+      (e.deltaX === 0 && Number.isInteger(e.deltaY) && Math.abs(e.deltaY) >= 40);
+
+    const onWheel = (e) => {
+      e.preventDefault();
+      if (isGesturing) return; // Safari: gesture* owns the pinch — discard concurrent wheels
+      if (e.ctrlKey) {
+        // trackpad pinch (or explicit ctrl+wheel)
+        zoomAt(e.clientX, e.clientY, Math.exp(-e.deltaY * 0.01));
+      } else if (isMouseWheel(e)) {
+        // notched mouse wheel — fixed-ratio step per click
+        zoomAt(e.clientX, e.clientY, Math.exp(-Math.sign(e.deltaY) * 0.18));
+      } else {
+        // trackpad two-finger scroll — pan
+        tf.current.x -= e.deltaX;
+        tf.current.y -= e.deltaY;
+        apply();
+      }
+    };
+
+    // Safari sends native gesture* events for trackpad pinch with a smooth
+    // e.scale; preferring these over the ctrl+wheel fallback gives a much
+    // better feel there. No-ops on other browsers. Safari also fires
+    // ctrlKey wheel events during the same pinch — isGesturing makes
+    // onWheel drop those entirely so they neither zoom nor pan.
+    let gsBase = 1;
+    let isGesturing = false;
+    const onGestureStart = (e) => { e.preventDefault(); isGesturing = true; gsBase = tf.current.scale; };
+    const onGestureChange = (e) => {
+      e.preventDefault();
+      zoomAt(e.clientX, e.clientY, (gsBase * e.scale) / tf.current.scale);
+    };
+    const onGestureEnd = (e) => { e.preventDefault(); isGesturing = false; };
+
+    // Drag-pan: middle button anywhere, or primary button on canvas
+    // background (anything that isn't an artboard or an inline editor).
+    let drag = null;
+    const onPointerDown = (e) => {
+      const onBg = !e.target.closest('[data-dc-slot], .dc-editable');
+      if (!(e.button === 1 || (e.button === 0 && onBg))) return;
+      e.preventDefault();
+      vp.setPointerCapture(e.pointerId);
+      drag = { id: e.pointerId, lx: e.clientX, ly: e.clientY };
+      vp.style.cursor = 'grabbing';
+    };
+    const onPointerMove = (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      tf.current.x += e.clientX - drag.lx;
+      tf.current.y += e.clientY - drag.ly;
+      drag.lx = e.clientX; drag.ly = e.clientY;
+      apply();
+    };
+    const onPointerUp = (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      vp.releasePointerCapture(e.pointerId);
+      drag = null;
+      vp.style.cursor = '';
+    };
+
+    vp.addEventListener('wheel', onWheel, { passive: false });
+    vp.addEventListener('gesturestart', onGestureStart, { passive: false });
+    vp.addEventListener('gesturechange', onGestureChange, { passive: false });
+    vp.addEventListener('gestureend', onGestureEnd, { passive: false });
+    vp.addEventListener('pointerdown', onPointerDown);
+    vp.addEventListener('pointermove', onPointerMove);
+    vp.addEventListener('pointerup', onPointerUp);
+    vp.addEventListener('pointercancel', onPointerUp);
+    return () => {
+      vp.removeEventListener('wheel', onWheel);
+      vp.removeEventListener('gesturestart', onGestureStart);
+      vp.removeEventListener('gesturechange', onGestureChange);
+      vp.removeEventListener('gestureend', onGestureEnd);
+      vp.removeEventListener('pointerdown', onPointerDown);
+      vp.removeEventListener('pointermove', onPointerMove);
+      vp.removeEventListener('pointerup', onPointerUp);
+      vp.removeEventListener('pointercancel', onPointerUp);
+    };
+  }, [apply, minScale, maxScale]);
+
+  const gridSvg = `url("data:image/svg+xml,%3Csvg width='120' height='120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M120 0H0v120' fill='none' stroke='${encodeURIComponent(DC.grid)}' stroke-width='1'/%3E%3C/svg%3E")`;
+  return (
+    <div
+      ref={vpRef}
+      className="design-canvas"
+      style={{
+        height: '100vh', width: '100vw',
+        background: DC.bg,
+        overflow: 'hidden',
+        overscrollBehavior: 'none',
+        touchAction: 'none',
+        position: 'relative',
+        fontFamily: DC.font,
+        boxSizing: 'border-box',
+        ...style,
+      }}
+    >
+      <div
+        ref={worldRef}
+        style={{
+          position: 'absolute', top: 0, left: 0,
+          transformOrigin: '0 0',
+          willChange: 'transform',
+          width: 'max-content', minWidth: '100%',
+          minHeight: '100%',
+          padding: '60px 0 80px',
+        }}
+      >
+        <div style={{ position: 'absolute', inset: -6000, backgroundImage: gridSvg, backgroundSize: '120px 120px', pointerEvents: 'none', zIndex: -1 }} />
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// DCSection — editable title + h-row of artboards in persisted order
+// ─────────────────────────────────────────────────────────────
+function DCSection({ id, title, subtitle, children, gap = 48 }) {
+  const ctx = React.useContext(DCCtx);
+  const sid = id ?? title;
+  const all = React.Children.toArray(children);
+  const artboards = all.filter((c) => c && c.type === DCArtboard);
+  const rest = all.filter((c) => !(c && c.type === DCArtboard));
+  const srcOrder = artboards.map((a) => a.props.id ?? a.props.label);
+  const sec = (ctx && sid && ctx.section(sid)) || {};
+
+  const order = React.useMemo(() => {
+    const kept = (sec.order || []).filter((k) => srcOrder.includes(k));
+    return [...kept, ...srcOrder.filter((k) => !kept.includes(k))];
+  }, [sec.order, srcOrder.join('|')]);
+
+  const byId = Object.fromEntries(artboards.map((a) => [a.props.id ?? a.props.label, a]));
+
+  return (
+    <div data-dc-section={sid} style={{ marginBottom: 80, position: 'relative' }}>
+      <div style={{ padding: '0 60px 56px' }}>
+        <DCEditable tag="div" value={sec.title ?? title}
+          onChange={(v) => ctx && sid && ctx.patchSection(sid, { title: v })}
+          style={{ fontSize: 28, fontWeight: 600, color: DC.title, letterSpacing: -0.4, marginBottom: 6, display: 'inline-block' }} />
+        {subtitle && <div style={{ fontSize: 16, color: DC.subtitle }}>{subtitle}</div>}
+      </div>
+      <div style={{ display: 'flex', gap, padding: '0 60px', alignItems: 'flex-start', width: 'max-content' }}>
+        {order.map((k) => (
+          <DCArtboardFrame key={k} sectionId={sid} artboard={byId[k]} order={order}
+            label={(sec.labels || {})[k] ?? byId[k].props.label}
+            onRename={(v) => ctx && ctx.patchSection(sid, (x) => ({ labels: { ...x.labels, [k]: v } }))}
+            onReorder={(next) => ctx && ctx.patchSection(sid, { order: next })}
+            onFocus={() => ctx && ctx.setFocus(`${sid}/${k}`)} />
+        ))}
+      </div>
+      {rest}
+    </div>
+  );
+}
+
+// DCArtboard — marker; rendered by DCArtboardFrame via DCSection.
+function DCArtboard() { return null; }
+
+function DCArtboardFrame({ sectionId, artboard, label, order, onRename, onReorder, onFocus }) {
+  const { id: rawId, label: rawLabel, width = 260, height = 480, children, style = {} } = artboard.props;
+  const id = rawId ?? rawLabel;
+  const ref = React.useRef(null);
+
+  // Live drag-reorder: dragged card sticks to cursor; siblings slide into
+  // their would-be slots in real time via transforms. DOM order only
+  // changes on drop.
+  const onGripDown = (e) => {
+    e.preventDefault(); e.stopPropagation();
+    const me = ref.current;
+    // translateX is applied in local (pre-scale) space but pointer deltas and
+    // getBoundingClientRect().left are screen-space — divide by the viewport's
+    // current scale so the dragged card tracks the cursor at any zoom level.
+    const scale = me.getBoundingClientRect().width / me.offsetWidth || 1;
+    const peers = Array.from(document.querySelectorAll(`[data-dc-section="${sectionId}"] [data-dc-slot]`));
+    const homes = peers.map((el) => ({ el, id: el.dataset.dcSlot, x: el.getBoundingClientRect().left }));
+    const slotXs = homes.map((h) => h.x);
+    const startIdx = order.indexOf(id);
+    const startX = e.clientX;
+    let liveOrder = order.slice();
+    me.classList.add('dc-dragging');
+
+    const layout = () => {
+      for (const h of homes) {
+        if (h.id === id) continue;
+        const slot = liveOrder.indexOf(h.id);
+        h.el.style.transform = `translateX(${(slotXs[slot] - h.x) / scale}px)`;
+      }
+    };
+
+    const move = (ev) => {
+      const dx = ev.clientX - startX;
+      me.style.transform = `translateX(${dx / scale}px)`;
+      const cur = homes[startIdx].x + dx;
+      let nearest = 0, best = Infinity;
+      for (let i = 0; i < slotXs.length; i++) {
+        const d = Math.abs(slotXs[i] - cur);
+        if (d < best) { best = d; nearest = i; }
+      }
+      if (liveOrder.indexOf(id) !== nearest) {
+        liveOrder = order.filter((k) => k !== id);
+        liveOrder.splice(nearest, 0, id);
+        layout();
+      }
+    };
+
+    const up = () => {
+      document.removeEventListener('pointermove', move);
+      document.removeEventListener('pointerup', up);
+      const finalSlot = liveOrder.indexOf(id);
+      me.classList.remove('dc-dragging');
+      me.style.transform = `translateX(${(slotXs[finalSlot] - homes[startIdx].x) / scale}px)`;
+      // After the settle transition, kill transitions + clear transforms +
+      // commit the reorder in the same frame so there's no visual snap-back.
+      setTimeout(() => {
+        for (const h of homes) { h.el.style.transition = 'none'; h.el.style.transform = ''; }
+        if (liveOrder.join('|') !== order.join('|')) onReorder(liveOrder);
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          for (const h of homes) h.el.style.transition = '';
+        }));
+      }, 180);
+    };
+    document.addEventListener('pointermove', move);
+    document.addEventListener('pointerup', up);
+  };
+
+  return (
+    <div ref={ref} data-dc-slot={id} style={{ position: 'relative', flexShrink: 0 }}>
+      <div className="dc-labelrow" style={{ position: 'absolute', bottom: '100%', left: -4, marginBottom: 4, color: DC.label }}>
+        <div className="dc-grip" onPointerDown={onGripDown} title="Drag to reorder">
+          <svg width="9" height="13" viewBox="0 0 9 13" fill="currentColor"><circle cx="2" cy="2" r="1.1"/><circle cx="7" cy="2" r="1.1"/><circle cx="2" cy="6.5" r="1.1"/><circle cx="7" cy="6.5" r="1.1"/><circle cx="2" cy="11" r="1.1"/><circle cx="7" cy="11" r="1.1"/></svg>
+        </div>
+        <div className="dc-labeltext" onClick={onFocus} title="Click to focus">
+          <DCEditable value={label} onChange={onRename} onClick={(e) => e.stopPropagation()}
+            style={{ fontSize: 15, fontWeight: 500, color: DC.label, lineHeight: 1 }} />
+        </div>
+      </div>
+      <button className="dc-expand" onClick={onFocus} onPointerDown={(e) => e.stopPropagation()} title="Focus">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M7 1h4v4M5 11H1V7M11 1L7.5 4.5M1 11l3.5-3.5"/></svg>
+      </button>
+      <div className="dc-card"
+        style={{ borderRadius: 2, boxShadow: '0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.06)', overflow: 'hidden', width, height, background: '#fff', ...style }}>
+        {children || <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bbb', fontSize: 13, fontFamily: DC.font }}>{id}</div>}
+      </div>
+    </div>
+  );
+}
+
+// Inline rename — commits on blur or Enter.
+function DCEditable({ value, onChange, style, tag = 'span', onClick }) {
+  const T = tag;
+  return (
+    <T className="dc-editable" contentEditable suppressContentEditableWarning
+      onClick={onClick}
+      onPointerDown={(e) => e.stopPropagation()}
+      onBlur={(e) => onChange && onChange(e.currentTarget.textContent)}
+      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); } }}
+      style={style}>{value}</T>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Focus mode — overlay one artboard; ←/→ within section, ↑/↓ across
+// sections, Esc or backdrop click to exit.
+// ─────────────────────────────────────────────────────────────
+function DCFocusOverlay({ entry, sectionMeta, sectionOrder }) {
+  const ctx = React.useContext(DCCtx);
+  const { sectionId, artboard } = entry;
+  const sec = ctx.section(sectionId);
+  const meta = sectionMeta[sectionId];
+  const peers = meta.slotIds;
+  const aid = artboard.props.id ?? artboard.props.label;
+  const idx = peers.indexOf(aid);
+  const secIdx = sectionOrder.indexOf(sectionId);
+
+  const go = (d) => { const n = peers[(idx + d + peers.length) % peers.length]; if (n) ctx.setFocus(`${sectionId}/${n}`); };
+  const goSection = (d) => {
+    const ns = sectionOrder[(secIdx + d + sectionOrder.length) % sectionOrder.length];
+    const first = sectionMeta[ns] && sectionMeta[ns].slotIds[0];
+    if (first) ctx.setFocus(`${ns}/${first}`);
+  };
+
+  React.useEffect(() => {
+    const k = (e) => {
+      if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); go(1); }
+      if (e.key === 'ArrowUp') { e.preventDefault(); goSection(-1); }
+      if (e.key === 'ArrowDown') { e.preventDefault(); goSection(1); }
+    };
+    document.addEventListener('keydown', k);
+    return () => document.removeEventListener('keydown', k);
+  });
+
+  const { width = 260, height = 480, children } = artboard.props;
+  const [vp, setVp] = React.useState({ w: window.innerWidth, h: window.innerHeight });
+  React.useEffect(() => { const r = () => setVp({ w: window.innerWidth, h: window.innerHeight }); window.addEventListener('resize', r); return () => window.removeEventListener('resize', r); }, []);
+  const scale = Math.max(0.1, Math.min((vp.w - 200) / width, (vp.h - 260) / height, 2));
+
+  const [ddOpen, setDd] = React.useState(false);
+  const Arrow = ({ dir, onClick }) => (
+    <button onClick={(e) => { e.stopPropagation(); onClick(); }}
+      style={{ position: 'absolute', top: '50%', [dir]: 28, transform: 'translateY(-50%)',
+        border: 'none', background: 'rgba(255,255,255,.08)', color: 'rgba(255,255,255,.9)',
+        width: 44, height: 44, borderRadius: 22, fontSize: 18, cursor: 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background .15s' }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,.18)')}
+      onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,.08)')}>
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <path d={dir === 'left' ? 'M11 3L5 9l6 6' : 'M7 3l6 6-6 6'} /></svg>
+    </button>
+  );
+
+  // Portal to body so position:fixed is the real viewport regardless of any
+  // transform on DesignCanvas's ancestors (including the canvas zoom itself).
+  return ReactDOM.createPortal(
+    <div onClick={() => ctx.setFocus(null)}
+      onWheel={(e) => e.preventDefault()}
+      style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(24,20,16,.6)', backdropFilter: 'blur(14px)',
+        fontFamily: DC.font, color: '#fff' }}>
+
+      {/* top bar: section dropdown (left) · close (right) */}
+      <div onClick={(e) => e.stopPropagation()}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 72, display: 'flex', alignItems: 'flex-start', padding: '16px 20px 0', gap: 16 }}>
+        <div style={{ position: 'relative' }}>
+          <button onClick={() => setDd((o) => !o)}
+            style={{ border: 'none', background: 'transparent', color: '#fff', cursor: 'pointer', padding: '6px 8px',
+              borderRadius: 6, textAlign: 'left', fontFamily: 'inherit' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: -0.3 }}>{meta.title}</span>
+              <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" style={{ opacity: .7 }}><path d="M2 4l3.5 3.5L9 4"/></svg>
+            </span>
+            {meta.subtitle && <span style={{ display: 'block', fontSize: 13, opacity: .6, fontWeight: 400, marginTop: 2 }}>{meta.subtitle}</span>}
+          </button>
+          {ddOpen && (
+            <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, background: '#2a251f', borderRadius: 8,
+              boxShadow: '0 8px 32px rgba(0,0,0,.4)', padding: 4, minWidth: 200, zIndex: 10 }}>
+              {sectionOrder.map((sid) => (
+                <button key={sid} onClick={() => { setDd(false); const f = sectionMeta[sid].slotIds[0]; if (f) ctx.setFocus(`${sid}/${f}`); }}
+                  style={{ display: 'block', width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer',
+                    background: sid === sectionId ? 'rgba(255,255,255,.1)' : 'transparent', color: '#fff',
+                    padding: '8px 12px', borderRadius: 5, fontSize: 14, fontWeight: sid === sectionId ? 600 : 400, fontFamily: 'inherit' }}>
+                  {sectionMeta[sid].title}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <div style={{ flex: 1 }} />
+        <button onClick={() => ctx.setFocus(null)}
+          onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,.12)')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+          style={{ border: 'none', background: 'transparent', color: 'rgba(255,255,255,.7)', width: 32, height: 32,
+            borderRadius: 16, fontSize: 20, cursor: 'pointer', lineHeight: 1, transition: 'background .12s' }}>×</button>
+      </div>
+
+      {/* card centered, label + index below — only the card itself stops
+          propagation so any backdrop click (including the margins around
+          the card) exits focus */}
+      <div
+        style={{ position: 'absolute', top: 64, bottom: 56, left: 100, right: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+        <div onClick={(e) => e.stopPropagation()} style={{ width: width * scale, height: height * scale, position: 'relative' }}>
+          <div style={{ width, height, transform: `scale(${scale})`, transformOrigin: 'top left', background: '#fff', borderRadius: 2, overflow: 'hidden',
+            boxShadow: '0 20px 80px rgba(0,0,0,.4)' }}>
+            {children || <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bbb' }}>{aid}</div>}
+          </div>
+        </div>
+        <div onClick={(e) => e.stopPropagation()} style={{ fontSize: 14, fontWeight: 500, opacity: .85, textAlign: 'center' }}>
+          {(sec.labels || {})[aid] ?? artboard.props.label}
+          <span style={{ opacity: .5, marginLeft: 10, fontVariantNumeric: 'tabular-nums' }}>{idx + 1} / {peers.length}</span>
+        </div>
+      </div>
+
+      <Arrow dir="left" onClick={() => go(-1)} />
+      <Arrow dir="right" onClick={() => go(1)} />
+
+      {/* dots */}
+      <div onClick={(e) => e.stopPropagation()}
+        style={{ position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 8 }}>
+        {peers.map((p, i) => (
+          <button key={p} onClick={() => ctx.setFocus(`${sectionId}/${p}`)}
+            style={{ border: 'none', padding: 0, cursor: 'pointer', width: 6, height: 6, borderRadius: 3,
+              background: i === idx ? '#fff' : 'rgba(255,255,255,.3)' }} />
+        ))}
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Post-it — absolute-positioned sticky note
+// ─────────────────────────────────────────────────────────────
+function DCPostIt({ children, top, left, right, bottom, rotate = -2, width = 180 }) {
+  return (
+    <div style={{
+      position: 'absolute', top, left, right, bottom, width,
+      background: DC.postitBg, padding: '14px 16px',
+      fontFamily: '"Comic Sans MS", "Marker Felt", "Segoe Print", cursive',
+      fontSize: 14, lineHeight: 1.4, color: DC.postitText,
+      boxShadow: '0 2px 8px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08)',
+      transform: `rotate(${rotate}deg)`,
+      zIndex: 5,
+    }}>{children}</div>
+  );
+}
+
+
+
+/* === TWEAKS PANEL === */
+
+// tweaks-panel.jsx
+// Reusable Tweaks shell + form-control helpers.
+//
+// Owns the host protocol (listens for __activate_edit_mode / __deactivate_edit_mode,
+// posts __edit_mode_available / __edit_mode_set_keys / __edit_mode_dismissed) so
+// individual prototypes don't re-roll it. Ships a consistent set of controls so you
+// don't hand-draw <input type="range">, segmented radios, steppers, etc.
+//
+// Usage (in an HTML file that loads React + Babel):
+//
+//   const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+//     "primaryColor": "#D97757",
+//     "fontSize": 16,
+//     "density": "regular",
+//     "dark": false
+//   }/*EDITMODE-END*/;
+//
+//   function App() {
+//     const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+//     return (
+//       <div style={{ fontSize: t.fontSize, color: t.primaryColor }}>
+//         Hello
+//         <TweaksPanel>
+//           <TweakSection label="Typography" />
+//           <TweakSlider label="Font size" value={t.fontSize} min={10} max={32} unit="px"
+//                        onChange={(v) => setTweak('fontSize', v)} />
+//           <TweakRadio  label="Density" value={t.density}
+//                        options={['compact', 'regular', 'comfy']}
+//                        onChange={(v) => setTweak('density', v)} />
+//           <TweakSection label="Theme" />
+//           <TweakColor  label="Primary" value={t.primaryColor}
+//                        onChange={(v) => setTweak('primaryColor', v)} />
+//           <TweakToggle label="Dark mode" value={t.dark}
+//                        onChange={(v) => setTweak('dark', v)} />
+//         </TweaksPanel>
+//       </div>
+//     );
+//   }
+//
+// ─────────────────────────────────────────────────────────────────────────────
+
+const __TWEAKS_STYLE = `
+  .twk-panel{position:fixed;right:16px;bottom:16px;z-index:2147483646;width:280px;
+    max-height:calc(100vh - 32px);display:flex;flex-direction:column;
+    background:rgba(250,249,247,.78);color:#29261b;
+    -webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);
+    border:.5px solid rgba(255,255,255,.6);border-radius:14px;
+    box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 12px 40px rgba(0,0,0,.18);
+    font:11.5px/1.4 ui-sans-serif,system-ui,-apple-system,sans-serif;overflow:hidden}
+  .twk-hd{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 8px 10px 14px;cursor:move;user-select:none}
+  .twk-hd b{font-size:12px;font-weight:600;letter-spacing:.01em}
+  .twk-x{appearance:none;border:0;background:transparent;color:rgba(41,38,27,.55);
+    width:22px;height:22px;border-radius:6px;cursor:default;font-size:13px;line-height:1}
+  .twk-x:hover{background:rgba(0,0,0,.06);color:#29261b}
+  .twk-body{padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px;
+    overflow-y:auto;overflow-x:hidden;min-height:0;
+    scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.15) transparent}
+  .twk-body::-webkit-scrollbar{width:8px}
+  .twk-body::-webkit-scrollbar-track{background:transparent;margin:2px}
+  .twk-body::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:4px;
+    border:2px solid transparent;background-clip:content-box}
+  .twk-body::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.25);
+    border:2px solid transparent;background-clip:content-box}
+  .twk-row{display:flex;flex-direction:column;gap:5px}
+  .twk-row-h{flex-direction:row;align-items:center;justify-content:space-between;gap:10px}
+  .twk-lbl{display:flex;justify-content:space-between;align-items:baseline;
+    color:rgba(41,38,27,.72)}
+  .twk-lbl>span:first-child{font-weight:500}
+  .twk-val{color:rgba(41,38,27,.5);font-variant-numeric:tabular-nums}
+
+  .twk-sect{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    color:rgba(41,38,27,.45);padding:10px 0 0}
+  .twk-sect:first-child{padding-top:0}
+
+  .twk-field{appearance:none;width:100%;height:26px;padding:0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;
+    background:rgba(255,255,255,.6);color:inherit;font:inherit;outline:none}
+  .twk-field:focus{border-color:rgba(0,0,0,.25);background:rgba(255,255,255,.85)}
+  select.twk-field{padding-right:22px;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='rgba(0,0,0,.5)' d='M0 0h10L5 6z'/></svg>");
+    background-repeat:no-repeat;background-position:right 8px center}
+
+  .twk-slider{appearance:none;-webkit-appearance:none;width:100%;height:4px;margin:6px 0;
+    border-radius:999px;background:rgba(0,0,0,.12);outline:none}
+  .twk-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+    width:14px;height:14px;border-radius:50%;background:#fff;
+    border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+  .twk-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;
+    background:#fff;border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+
+  .twk-seg{position:relative;display:flex;padding:2px;border-radius:8px;
+    background:rgba(0,0,0,.06);user-select:none}
+  .twk-seg-thumb{position:absolute;top:2px;bottom:2px;border-radius:6px;
+    background:rgba(255,255,255,.9);box-shadow:0 1px 2px rgba(0,0,0,.12);
+    transition:left .15s cubic-bezier(.3,.7,.4,1),width .15s}
+  .twk-seg.dragging .twk-seg-thumb{transition:none}
+  .twk-seg button{appearance:none;position:relative;z-index:1;flex:1;border:0;
+    background:transparent;color:inherit;font:inherit;font-weight:500;min-height:22px;
+    border-radius:6px;cursor:default;padding:4px 6px;line-height:1.2;
+    overflow-wrap:anywhere}
+
+  .twk-toggle{position:relative;width:32px;height:18px;border:0;border-radius:999px;
+    background:rgba(0,0,0,.15);transition:background .15s;cursor:default;padding:0}
+  .twk-toggle[data-on="1"]{background:#34c759}
+  .twk-toggle i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+  .twk-toggle[data-on="1"] i{transform:translateX(14px)}
+
+  .twk-num{display:flex;align-items:center;height:26px;padding:0 0 0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;background:rgba(255,255,255,.6)}
+  .twk-num-lbl{font-weight:500;color:rgba(41,38,27,.6);cursor:ew-resize;
+    user-select:none;padding-right:8px}
+  .twk-num input{flex:1;min-width:0;height:100%;border:0;background:transparent;
+    font:inherit;font-variant-numeric:tabular-nums;text-align:right;padding:0 8px 0 0;
+    outline:none;color:inherit;-moz-appearance:textfield}
+  .twk-num input::-webkit-inner-spin-button,.twk-num input::-webkit-outer-spin-button{
+    -webkit-appearance:none;margin:0}
+  .twk-num-unit{padding-right:8px;color:rgba(41,38,27,.45)}
+
+  .twk-btn{appearance:none;height:26px;padding:0 12px;border:0;border-radius:7px;
+    background:rgba(0,0,0,.78);color:#fff;font:inherit;font-weight:500;cursor:default}
+  .twk-btn:hover{background:rgba(0,0,0,.88)}
+  .twk-btn.secondary{background:rgba(0,0,0,.06);color:inherit}
+  .twk-btn.secondary:hover{background:rgba(0,0,0,.1)}
+
+  .twk-swatch{appearance:none;-webkit-appearance:none;width:56px;height:22px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:6px;padding:0;cursor:default;
+    background:transparent;flex-shrink:0}
+  .twk-swatch::-webkit-color-swatch-wrapper{padding:0}
+  .twk-swatch::-webkit-color-swatch{border:0;border-radius:5.5px}
+  .twk-swatch::-moz-color-swatch{border:0;border-radius:5.5px}
+`;
+
+// ── useTweaks ───────────────────────────────────────────────────────────────
+// Single source of truth for tweak values. setTweak persists via the host
+// (__edit_mode_set_keys → host rewrites the EDITMODE block on disk).
+function useTweaks(defaults) {
+  const [values, setValues] = React.useState(defaults);
+  // Accepts either setTweak('key', value) or setTweak({ key: value, ... }) so a
+  // useState-style call doesn't write a "[object Object]" key into the persisted
+  // JSON block.
+  const setTweak = React.useCallback((keyOrEdits, val) => {
+    const edits = typeof keyOrEdits === 'object' && keyOrEdits !== null
+      ? keyOrEdits : { [keyOrEdits]: val };
+    setValues((prev) => ({ ...prev, ...edits }));
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits }, '*');
+  }, []);
+  return [values, setTweak];
+}
+
+// ── TweaksPanel ─────────────────────────────────────────────────────────────
+// Floating shell. Registers the protocol listener BEFORE announcing
+// availability — if the announce ran first, the host's activate could land
+// before our handler exists and the toolbar toggle would silently no-op.
+// The close button posts __edit_mode_dismissed so the host's toolbar toggle
+// flips off in lockstep; the host echoes __deactivate_edit_mode back which
+// is what actually hides the panel.
+function TweaksPanel({ title = 'Tweaks', children }) {
+  const [open, setOpen] = React.useState(false);
+  const dragRef = React.useRef(null);
+  const offsetRef = React.useRef({ x: 16, y: 16 });
+  const PAD = 16;
+
+  const clampToViewport = React.useCallback(() => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const w = panel.offsetWidth, h = panel.offsetHeight;
+    const maxRight = Math.max(PAD, window.innerWidth - w - PAD);
+    const maxBottom = Math.max(PAD, window.innerHeight - h - PAD);
+    offsetRef.current = {
+      x: Math.min(maxRight, Math.max(PAD, offsetRef.current.x)),
+      y: Math.min(maxBottom, Math.max(PAD, offsetRef.current.y)),
+    };
+    panel.style.right = offsetRef.current.x + 'px';
+    panel.style.bottom = offsetRef.current.y + 'px';
+  }, []);
+
+  React.useEffect(() => {
+    if (!open) return;
+    clampToViewport();
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', clampToViewport);
+      return () => window.removeEventListener('resize', clampToViewport);
+    }
+    const ro = new ResizeObserver(clampToViewport);
+    ro.observe(document.documentElement);
+    return () => ro.disconnect();
+  }, [open, clampToViewport]);
+
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      const t = e?.data?.type;
+      if (t === '__activate_edit_mode') setOpen(true);
+      else if (t === '__deactivate_edit_mode') setOpen(false);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  const dismiss = () => {
+    setOpen(false);
+    window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*');
+  };
+
+  const onDragStart = (e) => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const r = panel.getBoundingClientRect();
+    const sx = e.clientX, sy = e.clientY;
+    const startRight = window.innerWidth - r.right;
+    const startBottom = window.innerHeight - r.bottom;
+    const move = (ev) => {
+      offsetRef.current = {
+        x: startRight - (ev.clientX - sx),
+        y: startBottom - (ev.clientY - sy),
+      };
+      clampToViewport();
+    };
+    const up = () => {
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  };
+
+  if (!open) return null;
+  return (
+    <>
+      <style>{__TWEAKS_STYLE}</style>
+      <div ref={dragRef} className="twk-panel" data-noncommentable=""
+           style={{ right: offsetRef.current.x, bottom: offsetRef.current.y }}>
+        <div className="twk-hd" onMouseDown={onDragStart}>
+          <b>{title}</b>
+          <button className="twk-x" aria-label="Close tweaks"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={dismiss}>✕</button>
+        </div>
+        <div className="twk-body">{children}</div>
+      </div>
+    </>
+  );
+}
+
+// ── Layout helpers ──────────────────────────────────────────────────────────
+
+function TweakSection({ label, children }) {
+  return (
+    <>
+      <div className="twk-sect">{label}</div>
+      {children}
+    </>
+  );
+}
+
+function TweakRow({ label, value, children, inline = false }) {
+  return (
+    <div className={inline ? 'twk-row twk-row-h' : 'twk-row'}>
+      <div className="twk-lbl">
+        <span>{label}</span>
+        {value != null && <span className="twk-val">{value}</span>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// ── Controls ────────────────────────────────────────────────────────────────
+
+function TweakSlider({ label, value, min = 0, max = 100, step = 1, unit = '', onChange }) {
+  return (
+    <TweakRow label={label} value={`${value}${unit}`}>
+      <input type="range" className="twk-slider" min={min} max={max} step={step}
+             value={value} onChange={(e) => onChange(Number(e.target.value))} />
+    </TweakRow>
+  );
+}
+
+function TweakToggle({ label, value, onChange }) {
+  return (
+    <div className="twk-row twk-row-h">
+      <div className="twk-lbl"><span>{label}</span></div>
+      <button type="button" className="twk-toggle" data-on={value ? '1' : '0'}
+              role="switch" aria-checked={!!value}
+              onClick={() => onChange(!value)}><i /></button>
+    </div>
+  );
+}
+
+function TweakRadio({ label, value, options, onChange }) {
+  const trackRef = React.useRef(null);
+  const [dragging, setDragging] = React.useState(false);
+  const opts = options.map((o) => (typeof o === 'object' ? o : { value: o, label: o }));
+  const idx = Math.max(0, opts.findIndex((o) => o.value === value));
+  const n = opts.length;
+
+  // The active value is read by pointer-move handlers attached for the lifetime
+  // of a drag — ref it so a stale closure doesn't fire onChange for every move.
+  const valueRef = React.useRef(value);
+  valueRef.current = value;
+
+  const segAt = (clientX) => {
+    const r = trackRef.current.getBoundingClientRect();
+    const inner = r.width - 4;
+    const i = Math.floor(((clientX - r.left - 2) / inner) * n);
+    return opts[Math.max(0, Math.min(n - 1, i))].value;
+  };
+
+  const onPointerDown = (e) => {
+    setDragging(true);
+    const v0 = segAt(e.clientX);
+    if (v0 !== valueRef.current) onChange(v0);
+    const move = (ev) => {
+      if (!trackRef.current) return;
+      const v = segAt(ev.clientX);
+      if (v !== valueRef.current) onChange(v);
+    };
+    const up = () => {
+      setDragging(false);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+
+  return (
+    <TweakRow label={label}>
+      <div ref={trackRef} role="radiogroup" onPointerDown={onPointerDown}
+           className={dragging ? 'twk-seg dragging' : 'twk-seg'}>
+        <div className="twk-seg-thumb"
+             style={{ left: `calc(2px + ${idx} * (100% - 4px) / ${n})`,
+                      width: `calc((100% - 4px) / ${n})` }} />
+        {opts.map((o) => (
+          <button key={o.value} type="button" role="radio" aria-checked={o.value === value}>
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </TweakRow>
+  );
+}
+
+function TweakSelect({ label, value, options, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <select className="twk-field" value={value} onChange={(e) => onChange(e.target.value)}>
+        {options.map((o) => {
+          const v = typeof o === 'object' ? o.value : o;
+          const l = typeof o === 'object' ? o.label : o;
+          return <option key={v} value={v}>{l}</option>;
+        })}
+      </select>
+    </TweakRow>
+  );
+}
+
+function TweakText({ label, value, placeholder, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <input className="twk-field" type="text" value={value} placeholder={placeholder}
+             onChange={(e) => onChange(e.target.value)} />
+    </TweakRow>
+  );
+}
+
+function TweakNumber({ label, value, min, max, step = 1, unit = '', onChange }) {
+  const clamp = (n) => {
+    if (min != null && n < min) return min;
+    if (max != null && n > max) return max;
+    return n;
+  };
+  const startRef = React.useRef({ x: 0, val: 0 });
+  const onScrubStart = (e) => {
+    e.preventDefault();
+    startRef.current = { x: e.clientX, val: value };
+    const decimals = (String(step).split('.')[1] || '').length;
+    const move = (ev) => {
+      const dx = ev.clientX - startRef.current.x;
+      const raw = startRef.current.val + dx * step;
+      const snapped = Math.round(raw / step) * step;
+      onChange(clamp(Number(snapped.toFixed(decimals))));
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+  return (
+    <div className="twk-num">
+      <span className="twk-num-lbl" onPointerDown={onScrubStart}>{label}</span>
+      <input type="number" value={value} min={min} max={max} step={step}
+             onChange={(e) => onChange(clamp(Number(e.target.value)))} />
+      {unit && <span className="twk-num-unit">{unit}</span>}
+    </div>
+  );
+}
+
+function TweakColor({ label, value, onChange }) {
+  return (
+    <div className="twk-row twk-row-h">
+      <div className="twk-lbl"><span>{label}</span></div>
+      <input type="color" className="twk-swatch" value={value}
+             onChange={(e) => onChange(e.target.value)} />
+    </div>
+  );
+}
+
+function TweakButton({ label, onClick, secondary = false }) {
+  return (
+    <button type="button" className={secondary ? 'twk-btn secondary' : 'twk-btn'}
+            onClick={onClick}>{label}</button>
+  );
+}
+
+
+
+/* === APP === */
+
+
+const { useState } = React;
+
+/* ── shared layer data ── */
+const LAYERS = {
+  env: {
+    label: "Environment", color: "var(--c-env)",
+    items: [
+      { id:"solar",  name:"Solar Exposure",  swatch:"#ffcc44", delta:"+14%", on:true  },
+      { id:"wind",   name:"Wind Flow",        swatch:"#88ccff", delta:"-3%",  on:true  },
+      { id:"veg",    name:"Green Coverage",   swatch:"#88ff44", delta:"+8%",  on:false },
+      { id:"heat",   name:"Urban Heat",       swatch:"#ff8844", delta:"+11%", on:false },
+    ]
+  },
+  eco: {
+    label: "Economic", color: "var(--c-eco)",
+    items: [
+      { id:"energy",  name:"Energy Demand",  swatch:"#44ffaa", delta:"+22%", on:true  },
+      { id:"carbon",  name:"Carbon Output",  swatch:"#ff4444", delta:"+18%", on:true  },
+      { id:"water",   name:"Water Use",      swatch:"#4488ff", delta:"+6%",  on:false },
+    ]
+  },
+  log: {
+    label: "Logistics", color: "var(--c-log)",
+    items: [
+      { id:"air",    name:"Air Quality",    swatch:"#66ddff", delta:"-9%",  on:true  },
+      { id:"bio",    name:"Biodiversity",   swatch:"#cc88ff", delta:"-4%",  on:false },
+      { id:"shadow", name:"Shadow Cast",    swatch:"#aaaaaa", delta:"—",    on:false },
+    ]
+  }
+};
+
+/* ══════════════════════════════════════
+   DIRECTION A — Studio
+   ══════════════════════════════════════ */
+function WireframeA() {
+  const [openCats, setOpenCats] = useState(["env","eco","log"]);
+  const [activeLayers, setActiveLayers] = useState(["solar","wind","energy","carbon","air"]);
+  const [layerPanelOpen, setLayerPanelOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState("layers");
+
+  const toggleCat = id => setOpenCats(p => p.includes(id) ? p.filter(c=>c!==id) : [...p, id]);
+  const toggleLayer = id => setActiveLayers(p => p.includes(id) ? p.filter(l=>l!==id) : [...p, id]);
+
+  return (
+    <div className="wf">
+      {/* MAP */}
+      <div className="map-ph" style={{position:'absolute',inset:0}} />
+
+      {/* HEADER */}
+      <header className="hdr-a">
+        <div className="hdr-a-brand">
+          <span className="name">ALLSPARK</span>
+          <span className="slash">//</span>
+          <span className="name" style={{color:'var(--wf-ink2)',fontWeight:400}}>IMPACT</span>
+          <span className="sub">parametric urban impact</span>
+        </div>
+
+        {/* TIME SCRUBBER */}
+        <div className="hdr-a-scrubber">
+          <div className="scrub-track" />
+          <div className="scrub-fill" />
+          <div className="scrub-steps">
+            {[["BASELINE","T0",true,true],["BUILD","T1",true,false],["OPEN","+1Y",false,false],["SETTLED","+5Y",false,false],["HORIZON","+20Y",false,false]].map(([l,s,filled,active])=>(
+              <div key={l} className={`scrub-step${active?' active':''}${filled&&!active?' filled':''}`}>
+                <div style={{fontSize:8,letterSpacing:'0.1em',textTransform:'uppercase',color:active?'var(--wf-orange)':'var(--wf-ink3)',marginBottom:4,fontFamily:"'DM Sans'"}}>{l}</div>
+                <div className="scrub-dot" />
+                <div style={{fontSize:8,color:'var(--wf-ink3)',marginTop:3,fontFamily:"'DM Mono'"}}>{s}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* RIGHT */}
+        <div className="hdr-a-right">
+          <div className="geo-pill">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+            <span style={{fontSize:10,color:'var(--wf-ink3)',letterSpacing:'0.05em'}}>SEARCH LOCATION…</span>
+          </div>
+          <div className="meta-dots">
+            <div className="live-dot" />
+            <span style={{letterSpacing:'0.1em'}}>LIVE</span>
+          </div>
+          <div style={{fontSize:9,letterSpacing:'0.06em',color:'var(--wf-ink3)',fontFamily:"'DM Mono'"}}>40.7536 / -74.0027</div>
+        </div>
+      </header>
+
+      {/* ICON SIDEBAR */}
+      <nav className="sidebar-a">
+        {[
+          {id:"layers", icon:<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M10 3L2 7.5 10 12 18 7.5z"/><path d="M2 12l8 4.5L18 12" opacity=".5"/></svg>, label:"Layers"},
+          {id:"massing", icon:<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="4" y="8" width="12" height="10"/><path d="M4 8l6-5 6 5"/></svg>, label:"Massing"},
+          {id:"impact", icon:<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l3 2"/></svg>, label:"Impact"},
+        ].map(({id,icon,label})=>(
+          <div key={id} className={`sidebar-icon${activeTab===id?' active':''}`} onClick={()=>{setActiveTab(id);setLayerPanelOpen(true);}}>
+            {icon}
+          </div>
+        ))}
+        <div className="sidebar-divider" />
+        {[
+          {id:"geo", icon:<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="10" cy="10" r="3"/><circle cx="10" cy="10" r="8" strokeDasharray="2 2"/><line x1="10" y1="2" x2="10" y2="5"/><line x1="10" y1="15" x2="10" y2="18"/><line x1="2" y1="10" x2="5" y2="10"/><line x1="15" y1="10" x2="18" y2="10"/></svg>},
+          {id:"set", icon:<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="10" cy="10" r="3"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4"/></svg>},
+        ].map(({id,icon})=>(
+          <div key={id} className="sidebar-icon">{icon}</div>
+        ))}
+      </nav>
+
+      {/* LAYER FLOAT PANEL */}
+      {layerPanelOpen && activeTab === "layers" && (
+        <div className="float-panel" style={{top:60,left:56,width:240,maxHeight:'calc(100% - 120px)',overflow:'auto'}}>
+          <div className="float-panel-hdr">
+            <span className="float-panel-title">Impact Layers</span>
+            <div style={{display:'flex',alignItems:'center',gap:8}}>
+              <span style={{fontSize:8,color:'var(--wf-ink3)',letterSpacing:'0.1em'}}>5 / 10 ON</span>
+              <div className="float-panel-close" onClick={()=>setLayerPanelOpen(false)}>×</div>
+            </div>
+          </div>
+          {Object.entries(LAYERS).map(([catId, cat])=>(
+            <div className="layer-cat" key={catId}>
+              <div className="layer-cat-head" onClick={()=>toggleCat(catId)}>
+                <div className="cat-dot" style={{background:cat.color}} />
+                <span>{cat.label}</span>
+                <span className="cat-chevron">{openCats.includes(catId)?'▲':'▼'}</span>
+              </div>
+              {openCats.includes(catId) && cat.items.map(lyr=>(
+                <div key={lyr.id} className={`layer-row-a${activeLayers.includes(lyr.id)?' on':''}`}
+                     onClick={()=>toggleLayer(lyr.id)}
+                     style={{paddingLeft:8}}>
+                  <div className={`layer-toggle${activeLayers.includes(lyr.id)?' on':''}`} />
+                  <div className="layer-swatch" style={{background:lyr.swatch}} />
+                  <span style={{flex:1,fontSize:10}}>{lyr.name}</span>
+                  <span className={`layer-delta${lyr.delta.startsWith('+')?' pos':lyr.delta.startsWith('-')?' neg':''}`}>{lyr.delta}</span>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* MASSING FLOAT PANEL */}
+      {activeTab === "massing" && (
+        <div className="float-panel" style={{top:60,left:56,width:240}}>
+          <div className="float-panel-hdr">
+            <span className="float-panel-title">Massing Model</span>
+            <div className="float-panel-close" onClick={()=>setActiveTab("layers")}>×</div>
+          </div>
+          <div style={{padding:'12px 14px',display:'flex',flexDirection:'column',gap:8}}>
+            <div style={{display:'flex',gap:6}}>
+              <button className="btn-pri" style={{flex:1,padding:'7px 0',fontSize:9}}>LOAD GLB</button>
+              <button className="btn-sec" style={{flex:1,padding:'7px 0',fontSize:9}}>CLEAR</button>
+            </div>
+            <div className="ctrl-grid" style={{padding:0,gridTemplateColumns:'1fr 1fr',gap:6}}>
+              {[["LAT","40.75380"],["LON","-74.00630"],["ROT °","0°"],["Z OFF m","0"],["SCALE","1.00"]].map(([l,v])=>(
+                <label key={l} className="ctrl-label">
+                  {l}<div className="ctrl-field" style={{height:24,lineHeight:'24px',fontSize:10}}>{v}</div>
+                </label>
+              ))}
+            </div>
+            <div style={{borderTop:'1px dashed var(--wf-line)',paddingTop:8,display:'flex',flexDirection:'column',gap:4}}>
+              {[["FOOTPRINT","13,400 m²"],["HEIGHT","42 m"],["VOLUME","562,800 m³"],["FLOORS","14"]].map(([l,v])=>(
+                <div key={l} style={{display:'flex',justifyContent:'space-between',fontSize:9,padding:'3px 0',borderBottom:'1px solid var(--wf-line)'}}>
+                  <span style={{color:'var(--wf-ink3)',letterSpacing:'0.06em',textTransform:'uppercase'}}>{l}</span>
+                  <strong style={{color:'var(--wf-ink)',fontWeight:500,fontFamily:"'DM Mono'"}}>{v}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* INLINE MAP ANNOTATIONS */}
+      {/* Solar annotation */}
+      <div className="map-ann" style={{top:'32%',left:'38%'}}>
+        <div className="ann-card">
+          <div className="ann-label">Solar Gain</div>
+          <div>
+            <span className="ann-value">4.2</span>
+            <span className="ann-unit">kWh/m²/day</span>
+          </div>
+          <div className="ann-delta">▲ +14% vs baseline</div>
+        </div>
+        <div className="ann-line" style={{height:40}} />
+        <div style={{width:5,height:5,borderRadius:'50%',background:'var(--wf-orange2)',marginLeft:2}} />
+      </div>
+
+      {/* Carbon annotation */}
+      <div className="map-ann" style={{top:'55%',right:'24%',alignItems:'flex-end'}}>
+        <div className="ann-card" style={{textAlign:'right'}}>
+          <div className="ann-label">Carbon Output</div>
+          <div>
+            <span className="ann-value">890</span>
+            <span className="ann-unit">tCO₂/yr</span>
+          </div>
+          <div className="ann-delta" style={{color:'oklch(50% 0.16 25)'}}>▲ +18% vs baseline</div>
+        </div>
+        <div className="ann-line" style={{height:30,marginLeft:'auto',marginRight:4}} />
+        <div style={{width:5,height:5,borderRadius:'50%',background:'var(--wf-orange2)',marginLeft:'auto',marginRight:2}} />
+      </div>
+
+      {/* Energy annotation */}
+      <div className="map-ann" style={{bottom:'20%',left:'42%'}}>
+        <div style={{width:5,height:5,borderRadius:'50%',background:'var(--wf-orange2)',marginLeft:2}} />
+        <div className="ann-line" style={{height:24}} />
+        <div className="ann-card">
+          <div className="ann-label">Energy Demand</div>
+          <div>
+            <span className="ann-value">2.1</span>
+            <span className="ann-unit">MW peak</span>
+          </div>
+          <div className="ann-delta">▲ +22% vs baseline</div>
+        </div>
+      </div>
+
+      {/* Corner brackets on map */}
+      <div className="bracket-tl" style={{top:52,left:56}} />
+      <div className="bracket-br" style={{bottom:36,right:8}} />
+
+      {/* MAP COMPASS + ZOOM */}
+      <div style={{position:'absolute',bottom:44,right:14,display:'flex',flexDirection:'column',gap:3,zIndex:8}}>
+        <div style={{width:28,height:28,border:'1px solid var(--wf-line)',background:'var(--wf-bg)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',fontSize:13}}>＋</div>
+        <div style={{width:28,height:28,border:'1px solid var(--wf-line)',background:'var(--wf-bg)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',fontSize:13}}>−</div>
+        <div style={{width:28,height:28,border:'1px solid var(--wf-line)',background:'var(--wf-bg)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--wf-ink3)" strokeWidth="1.2"><path d="M6 1v4M6 7v4M1 6h4M7 6h4"/></svg>
+        </div>
+      </div>
+
+      {/* BOTTOM COORD HUD */}
+      <div style={{position:'absolute',bottom:36,left:56,display:'flex',gap:16,padding:'6px 12px',background:'rgba(255,253,250,0.85)',backdropFilter:'blur(6px)',border:'1px solid var(--wf-line)',fontSize:9,letterSpacing:'0.06em',color:'var(--wf-ink3)',fontFamily:"'DM Mono'",zIndex:8}}>
+        <span>ZOOM <strong style={{color:'var(--wf-ink)'}}>15.8</strong></span>
+        <span>PITCH <strong style={{color:'var(--wf-ink)'}}>55°</strong></span>
+        <span>BEARING <strong style={{color:'var(--wf-ink)'}}>-18°</strong></span>
+        <span>MODE <strong style={{color:'var(--wf-orange)'}}>CONTEXT</strong></span>
+      </div>
+
+      {/* FOOTER */}
+      <footer className="footer-a">
+        <span className="footer-item">SCENARIO <strong>BASELINE T0</strong></span>
+        <div className="footer-sep" />
+        <span className="footer-item">RADIUS <strong>400 m</strong></span>
+        <div className="footer-sep" />
+        <span className="footer-item">GFA <strong>13,750 m²</strong></span>
+        <div className="footer-sep" />
+        <span className="footer-item">PROGRAM <strong>Museum · Media</strong></span>
+        <div style={{marginLeft:'auto',fontSize:9,color:'var(--wf-ink3)',letterSpacing:'0.06em'}}>ALLSPARK // IMPACT · v0.9 · EPSG:4326</div>
+      </footer>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
+   DIRECTION B — Command
+   ══════════════════════════════════════ */
+function WireframeB() {
+  const [openCats, setOpenCats] = useState(["env","eco","log"]);
+  const [activeLayers, setActiveLayers] = useState(["solar","wind","energy","carbon","air"]);
+  const [activeMode, setActiveMode] = useState("impact");
+  const [rpanelOpen, setRpanelOpen] = useState(true);
+  const [lpanelTab, setLpanelTab] = useState("layers");
+
+  const toggleCat = id => setOpenCats(p => p.includes(id) ? p.filter(c=>c!==id) : [...p, id]);
+  const toggleLayer = id => setActiveLayers(p => p.includes(id) ? p.filter(l=>l!==id) : [...p, id]);
+
+  return (
+    <div className="wf">
+      <div className="map-ph" style={{position:'absolute',inset:0}} />
+
+      {/* HEADER */}
+      <header className="hdr-b">
+        <div className="hdr-b-brand">
+          <span className="mark">ALLSPARK</span>
+          <span className="slash" style={{color:'var(--wf-orange)',fontWeight:400,fontSize:14}}> // </span>
+          <span className="word" style={{fontSize:12,letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--wf-ink2)'}}>IMPACT</span>
+        </div>
+
+        {/* MODE TOGGLE */}
+        <div className="hdr-b-mode">
+          {[["layers","Layers"],["massing","Massing"],["impact","Impact"]].map(([id,label])=>(
+            <button key={id} className={`mode-btn${activeMode===id?' active':''}`} onClick={()=>setActiveMode(id)}>{label}</button>
+          ))}
+        </div>
+
+        {/* SCRUBBER */}
+        <div className="hdr-b-scrubber">
+          <div className="scrub-track" />
+          <div className="scrub-fill" style={{width:'25%'}} />
+          <div className="scrub-steps">
+            {[["BASELINE","T0",true,true],["BUILD","T1",true,false],["OPEN","+1Y",false,false],["SETTLED","+5Y",false,false],["HORIZON","+20Y",false,false]].map(([l,s,filled,active])=>(
+              <div key={l} className={`scrub-step${active?' active':''}${filled&&!active?' filled':''}`}>
+                <div style={{fontSize:8,letterSpacing:'0.1em',textTransform:'uppercase',color:active?'var(--wf-orange)':'var(--wf-ink3)',marginBottom:4,fontFamily:"'DM Sans'"}}>{l}</div>
+                <div className="scrub-dot" />
+                <div style={{fontSize:8,color:'var(--wf-ink3)',marginTop:3,fontFamily:"'DM Mono'"}}>{s}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* HEADER RIGHT */}
+        <div className="hdr-b-right">
+          <div className="geo-pill" style={{minWidth:160}}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+            <span style={{fontSize:10,color:'var(--wf-ink3)',letterSpacing:'0.04em'}}>SEARCH LOCATION…</span>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:6,fontSize:9,letterSpacing:'0.08em',color:'var(--wf-ink3)'}}>
+            <div className="live-dot" />
+            <span>LIVE</span>
+          </div>
+          <div style={{width:28,height:28,border:'1px solid var(--wf-line)',background:'var(--wf-bg2)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',borderRadius:2}}>
+            <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="var(--wf-ink3)" strokeWidth="1.5"><path d="M3 6h14M3 10h14M3 14h14"/></svg>
+          </div>
+        </div>
+      </header>
+
+      {/* LEFT PANEL */}
+      <aside className="lpanel-b">
+        <div className="lpanel-b-tabs">
+          {[["layers","Layers"],["program","Program"],["geo","Geometry"]].map(([id,label])=>(
+            <div key={id} className={`lpanel-tab${lpanelTab===id?' active':''}`} onClick={()=>setLpanelTab(id)}>{label}</div>
+          ))}
+        </div>
+        <div className="lpanel-b-body">
+          {lpanelTab === "layers" && Object.entries(LAYERS).map(([catId, cat])=>(
+            <div className="cat-group" key={catId}>
+              <div className="cat-group-hdr" onClick={()=>toggleCat(catId)}>
+                <div className="cat-dot" style={{background:cat.color,width:8,height:8,borderRadius:'50%'}} />
+                <span className="cat-group-name">{cat.label}</span>
+                <span className="cat-count">{cat.items.filter(l=>activeLayers.includes(l.id)).length}/{cat.items.length}</span>
+                <span style={{fontSize:9,color:'var(--wf-ink3)',marginLeft:6}}>{openCats.includes(catId)?'▲':'▼'}</span>
+              </div>
+              {openCats.includes(catId) && (
+                <div className="cat-group-layers">
+                  {cat.items.map(lyr=>(
+                    <div key={lyr.id} className={`layer-b${activeLayers.includes(lyr.id)?' on':''}`} onClick={()=>toggleLayer(lyr.id)}>
+                      <div className="layer-b-chk" />
+                      <div className="layer-b-sw" style={{background:lyr.swatch}} />
+                      <span className="layer-b-name">{lyr.name}</span>
+                      <span className={`layer-b-val${lyr.delta.startsWith('+')?' sign-pos':''}`} style={{color:lyr.delta.startsWith('-')?'oklch(50% 0.14 25)':lyr.delta.startsWith('+') ? 'oklch(48% 0.14 150)':'var(--wf-ink3)'}}>{lyr.delta}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+          {lpanelTab === "program" && (
+            <div style={{padding:'14px 16px',display:'flex',flexDirection:'column',gap:10}}>
+              <div className="ctrl-grid" style={{padding:0,gap:8}}>
+                {[["TYPE","Museum · Media"],["GFA m²","13,750"],["HRS/WK","60"],["ADMISSION","$28"],["STAFF","120"]].map(([l,v])=>(
+                  <label key={l} className="ctrl-label">
+                    {l}<div className="ctrl-field" style={{height:26,lineHeight:'26px',fontSize:10}}>{v}</div>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+          {lpanelTab === "geo" && (
+            <div style={{padding:'14px 16px',display:'flex',flexDirection:'column',gap:8}}>
+              <label className="ctrl-label">RADIUS m
+                <div style={{display:'flex',alignItems:'center',gap:8,marginTop:2}}>
+                  <div style={{flex:1,height:2,background:'var(--wf-line)',position:'relative'}}>
+                    <div style={{position:'absolute',left:0,width:'30%',height:'100%',background:'var(--wf-orange)'}} />
+                    <div style={{position:'absolute',left:'30%',width:10,height:10,background:'var(--wf-orange)',borderRadius:'50%',top:-4,transform:'translateX(-50%)'}} />
+                  </div>
+                  <span style={{fontSize:10,color:'var(--wf-ink)',fontFamily:"'DM Mono'"}}>400 m</span>
+                </div>
+              </label>
+              <label className="ctrl-label">MODE
+                <div className="ctrl-field" style={{height:26,lineHeight:'26px',fontSize:10}}>EUCLIDEAN</div>
+              </label>
+              <div style={{padding:'6px 0 2px',fontSize:9,color:'var(--wf-ink3)',lineHeight:1.5,borderLeft:'2px solid var(--wf-orange2)',paddingLeft:8}}>
+                Boundary is an editorial choice, not a measurement.
+              </div>
+            </div>
+          )}
+        </div>
+        {/* collapse handle */}
+        <div className="collapse-handle left" style={{position:'absolute',bottom:'auto',top:'50%',right:-14,transform:'translateY(-50%)'}}>‹</div>
+      </aside>
+
+      {/* RIGHT PANEL */}
+      {rpanelOpen && (
+        <aside className="rpanel-b" style={{position:'absolute',top:56,right:0,bottom:32,width:300,background:'var(--wf-bg)',borderLeft:'1px solid var(--wf-line)',display:'flex',flexDirection:'column',zIndex:10}}>
+          <div className="rpanel-b-hdr">
+            <div className="rpanel-b-title">IMPACT READOUTS</div>
+            <div className="rpanel-b-sub">Scenario: BASELINE T0 · Radius: 400m</div>
+          </div>
+          <div style={{flex:1,overflowY:'auto'}}>
+            {/* BIG NUMBER CARD */}
+            <div className="rcard" style={{background:'var(--wf-bg2)'}}>
+              <div className="rcard-label">Net Impact Score</div>
+              <div><span className="rcard-big">+34</span><span className="rcard-unit">pts</span></div>
+              <div className="rcard-delta">▲ Moderate positive · 6 factors</div>
+            </div>
+
+            {/* FOOTPRINT */}
+            <div className="rcard">
+              <div className="rcard-label">Massing Summary</div>
+              <div className="metric-list">
+                {[["Footprint","13,400 m²"],["Height","42 m"],["Volume","562,800 m³"],["Floors (est.)","14"]].map(([l,v])=>(
+                  <div key={l} className="metric-item"><span className="ml">{l}</span><span className="mv" style={{fontFamily:"'DM Mono'"}}>{v}</span></div>
+                ))}
+              </div>
+            </div>
+
+            {/* SOLAR */}
+            <div className="rcard">
+              <div className="rcard-label">Solar Exposure</div>
+              <div><span className="rcard-big" style={{fontSize:28}}>4.2</span><span className="rcard-unit">kWh/m²/day</span></div>
+              <div className="rcard-delta">▲ +14% vs baseline</div>
+              {/* mini sparkline placeholder */}
+              <div style={{marginTop:8,height:28,background:'var(--wf-bg2)',border:'1px solid var(--wf-line)',display:'flex',alignItems:'flex-end',padding:'0 4px',gap:2}}>
+                {[0.4,0.5,0.6,0.8,0.9,0.7,0.85,0.75,0.9,1,0.95,0.8].map((h,i)=>(
+                  <div key={i} style={{flex:1,height:`${h*100}%`,background:i>8?'var(--wf-orange)':'var(--wf-line2)',borderRadius:1}} />
+                ))}
+              </div>
+            </div>
+
+            {/* CARBON */}
+            <div className="rcard">
+              <div className="rcard-label">Carbon Output</div>
+              <div><span className="rcard-big" style={{fontSize:28,color:'oklch(45% 0.16 25)'}}>890</span><span className="rcard-unit">tCO₂/yr</span></div>
+              <div className="rcard-delta" style={{color:'oklch(50% 0.16 25)'}}>▲ +18% vs baseline</div>
+            </div>
+
+            {/* ECONOMIC */}
+            <div className="rcard">
+              <div className="rcard-label">Economic Impact</div>
+              <div className="metric-list">
+                {[["Annual Revenue","$14.8 M"],["Jobs Created","120"],["Tax Generated","$2.1 M"],["Footfall / yr","485,000"]].map(([l,v])=>(
+                  <div key={l} className="metric-item"><span className="ml">{l}</span><span className="mv" style={{fontFamily:"'DM Mono'"}}>{v}</span></div>
+                ))}
+              </div>
+            </div>
+          </div>
+          {/* collapse handle */}
+          <div className="collapse-handle right" onClick={()=>setRpanelOpen(false)}>›</div>
+        </aside>
+      )}
+      {!rpanelOpen && (
+        <div style={{position:'absolute',top:'50%',right:0,transform:'translateY(-50%)',width:14,height:40,background:'var(--wf-bg)',border:'1px solid var(--wf-line)',borderRight:'none',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',zIndex:12,color:'var(--wf-ink3)',fontSize:9}} onClick={()=>setRpanelOpen(true)}>‹</div>
+      )}
+
+      {/* MAP CORNER HUD — bottom left */}
+      <div style={{position:'absolute',bottom:40,left:288,display:'flex',gap:14,padding:'5px 12px',background:'rgba(255,253,250,0.88)',backdropFilter:'blur(6px)',border:'1px solid var(--wf-line)',fontSize:9,letterSpacing:'0.06em',color:'var(--wf-ink3)',fontFamily:"'DM Mono'",zIndex:8}}>
+        <span>ZOOM <strong style={{color:'var(--wf-ink)'}}>15.8</strong></span>
+        <span>PITCH <strong style={{color:'var(--wf-ink)'}}>55°</strong></span>
+        <span>BEARING <strong style={{color:'var(--wf-ink)'}}>-18°</strong></span>
+        <span>ACTIVE <strong style={{color:'var(--wf-orange)'}}>SOLAR · CARBON</strong></span>
+      </div>
+
+      {/* MAP CONTROLS */}
+      <div style={{position:'absolute',bottom:44,right:rpanelOpen?314:14,display:'flex',flexDirection:'column',gap:3,zIndex:8}}>
+        <div style={{width:28,height:28,border:'1px solid var(--wf-line)',background:'var(--wf-bg)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',fontSize:13}}>＋</div>
+        <div style={{width:28,height:28,border:'1px solid var(--wf-line)',background:'var(--wf-bg)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',fontSize:13}}>−</div>
+      </div>
+
+      {/* DROP ZONE  */}
+      {activeMode === "massing" && (
+        <div style={{position:'absolute',left:320,right:320,top:'50%',transform:'translateY(-50%)',border:'1px dashed var(--wf-line2)',padding:'32px 24px',textAlign:'center',background:'rgba(255,253,250,0.90)',backdropFilter:'blur(6px)',zIndex:8}}>
+          <div style={{fontSize:11,letterSpacing:'0.14em',textTransform:'uppercase',color:'var(--wf-ink)',marginBottom:6}}>DROP GLB MASSING FILE</div>
+          <div style={{fontSize:10,color:'var(--wf-ink3)',letterSpacing:'0.06em'}}>or click to browse · .glb / .gltf</div>
+          <div style={{marginTop:14,display:'flex',justifyContent:'center',gap:8}}>
+            <button className="btn-pri" style={{fontSize:10}}>BROWSE FILES</button>
+            <button className="btn-sec" style={{fontSize:10}}>LOAD DEMO</button>
+          </div>
+        </div>
+      )}
+
+      {/* FOOTER */}
+      <footer className="footer-b">
+        <div className="left">
+          <span className="fitem">SCENARIO <strong>BASELINE T0</strong></span>
+          <span className="fitem">RADIUS <strong>400 m</strong></span>
+          <span className="fitem">PROGRAM <strong>Museum · Media</strong></span>
+        </div>
+        <div className="right">
+          <span className="fitem">EPSG <strong>4326</strong></span>
+          <span className="fitem">REF <strong>2263</strong></span>
+          <span className="fitem" style={{color:'var(--wf-ink3)',letterSpacing:'0.04em'}}>ALLSPARK // IMPACT</span>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
+   CANVAS WRAPPER
+   ══════════════════════════════════════ */
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "direction": "both"
+}/*EDITMODE-END*/;
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  return (
+    <>
+      <DesignCanvas>
+        {(t.direction === "both" || t.direction === "A only") && (
+          <DCSection id="dir-a" title="Direction A — Studio">
+            <DCArtboard id="a-full" label="A: Icon Sidebar + Floating Panels" width={1440} height={820}>
+              <WireframeA />
+            </DCArtboard>
+          </DCSection>
+        )}
+        {(t.direction === "both" || t.direction === "B only") && (
+          <DCSection id="dir-b" title="Direction B — Command">
+            <DCArtboard id="b-full" label="B: Top Toolbar + Persistent Panels" width={1440} height={820}>
+              <WireframeB />
+            </DCArtboard>
+          </DCSection>
+        )}
+      </DesignCanvas>
+
+      <TweaksPanel>
+        <TweakSection label="Shown Directions" />
+        <TweakRadio label="View" value={t.direction} options={["A only","B only","both"]} onChange={v => setTweak("direction", v)} />
+      </TweaksPanel>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+
+</script>
+<div id="root"></div>
+</body>
+</html>

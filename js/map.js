@@ -10,11 +10,9 @@ let _onReadyCallbacks = [];
 let _ready = false;
 const _styleLoadCallbacks = [];
 
-const getMapStyle = (theme) => {
+const getMapStyle = (_theme) => {
   const key = CONFIG.MAPTILER_KEY;
-  return theme === 'light'
-    ? `https://api.maptiler.com/maps/streets-v2-light/style.json?key=${key}`
-    : `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${key}`;
+  return `https://api.maptiler.com/maps/streets-v2-light/style.json?key=${key}`;
 };
 
 export function initMap(state) {

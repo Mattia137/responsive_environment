@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ALLSPARK // IMPACT</title>
 
-  <!-- Fragment Mono + Instrument Serif (for readout big numbers) -->
+  <!-- DM Sans + DM Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fragment+Mono:ital@0;1&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,200;0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 
   <!-- MapTiler GL JS -->
-  <link href="https://cdn.maptiler.com/maptiler-sdk-js/v2.3.0/maptiler-sdk.css" rel="stylesheet" />
-  <script src="https://cdn.maptiler.com/maptiler-sdk-js/v2.3.0/maptiler-sdk.umd.min.js"></script>
+  <link href="https://cdn.maptiler.com/maptiler-sdk-js/v2.5.2/maptiler-sdk.css" rel="stylesheet" />
+  <script src="https://cdn.maptiler.com/maptiler-sdk-js/v2.5.2/maptiler-sdk.umd.min.js"></script>
 
-  <!-- Import map: resolves bare 'three' and 'three/addons/' specifiers in ES modules -->
+  <!-- Import map: resolves bare 'three' and 'three/addons/' specifiers -->
   <script type="importmap">
   {
     "imports": {
@@ -24,10 +24,8 @@
   }
   </script>
 
-  <!-- proj4 (for NY State Plane reprojection) -->
+  <!-- proj4 + turf -->
   <script src="https://cdn.jsdelivr.net/npm/proj4@2.10.0/dist/proj4.min.js"></script>
-
-  <!-- turf (for geospatial ops) -->
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
   <link rel="stylesheet" href="css/base.css" />
@@ -36,212 +34,304 @@
 </head>
 <body>
 
-  <!-- ============================== HEADER ============================== -->
+  <!-- ═══════════════════════════ HEADER (52px) ═══════════════════════════ -->
   <header class="app-header">
-    <div class="brand">
+
+    <!-- Brand -->
+    <div class="hdr-brand">
       <span class="brand-mark">ALLSPARK</span>
       <span class="brand-slash">//</span>
       <span class="brand-word">IMPACT</span>
-      <span class="brand-sub">parametric urban impact projection</span>
     </div>
 
-    <div class="geo-search" id="geo-search">
-      <svg class="geo-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-        <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/>
-      </svg>
-      <input type="text" id="geo-input" class="geo-input" placeholder="SEARCH LOCATION…" autocomplete="off" spellcheck="false" />
-      <ul class="geo-results" id="geo-results"></ul>
+    <!-- Mode toggle -->
+    <div class="hdr-mode">
+      <button class="mode-btn" data-mode="layers">layers</button>
+      <button class="mode-btn" data-mode="massing">massing</button>
+      <button class="mode-btn active" data-mode="impact">impact</button>
     </div>
 
-    <div class="time-scrubber" id="time-scrubber" role="group" aria-label="Time Horizon">
-      <div class="scrubber-track"></div>
-      <div class="scrubber-fill" id="scrubber-fill"></div>
-      <button class="scrubber-step active" data-step="0" aria-label="Baseline">
-        <span class="scrubber-label">BASELINE</span>
-        <span class="scrubber-sub">T0</span>
-      </button>
-      <button class="scrubber-step" data-step="1" aria-label="Construction">
-        <span class="scrubber-label">BUILD</span>
-        <span class="scrubber-sub">T1</span>
-      </button>
-      <button class="scrubber-step" data-step="2" aria-label="Open +1Y">
-        <span class="scrubber-label">OPEN</span>
-        <span class="scrubber-sub">+1Y</span>
-      </button>
-      <button class="scrubber-step" data-step="3" aria-label="Settled +5Y">
-        <span class="scrubber-label">SETTLED</span>
-        <span class="scrubber-sub">+5Y</span>
-      </button>
-      <button class="scrubber-step" data-step="4" aria-label="Horizon +20Y">
-        <span class="scrubber-label">HORIZON</span>
-        <span class="scrubber-sub">+20Y</span>
-      </button>
+    <!-- Time scrubber (flex:1) -->
+    <div class="time-scrubber" id="time-scrubber">
+      <div class="scrubber-track">
+        <div class="scrubber-fill" id="scrubber-fill"></div>
+      </div>
+      <div class="scrubber-steps">
+        <button class="scrubber-step active" data-step="0">
+          <span class="scrubber-label">BASELINE</span>
+          <div class="scrubber-dot"></div>
+          <span class="scrubber-sub">T0</span>
+        </button>
+        <button class="scrubber-step" data-step="1">
+          <span class="scrubber-label">BUILD</span>
+          <div class="scrubber-dot"></div>
+          <span class="scrubber-sub">T1</span>
+        </button>
+        <button class="scrubber-step" data-step="2">
+          <span class="scrubber-label">OPEN</span>
+          <div class="scrubber-dot"></div>
+          <span class="scrubber-sub">+1Y</span>
+        </button>
+        <button class="scrubber-step" data-step="3">
+          <span class="scrubber-label">SETTLED</span>
+          <div class="scrubber-dot"></div>
+          <span class="scrubber-sub">+5Y</span>
+        </button>
+        <button class="scrubber-step" data-step="4">
+          <span class="scrubber-label">HORIZON</span>
+          <div class="scrubber-dot"></div>
+          <span class="scrubber-sub">+20Y</span>
+        </button>
+      </div>
     </div>
 
-    <div class="header-meta">
-      <span class="meta-item"><span class="pulse-dot"></span>LIVE</span>
-      <span class="meta-item">SCENARIO <strong id="scenario-tag">BASELINE</strong></span>
-      <span class="meta-item"><span id="local-time">--:--:--</span></span>
-      <button id="btn-wrap-inspector" class="wrap-inspector-btn" aria-label="Open Wrap Inspector" aria-expanded="false" title="Wrap Inspector (W) — what each layer sees and excludes">
-        <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">
-          <rect x="2" y="2" width="16" height="16" rx="1"/>
-          <text x="10" y="14.5" text-anchor="middle" font-size="10" font-family="monospace" fill="currentColor" stroke="none">?</text>
+    <!-- Search + meta -->
+    <div class="hdr-meta">
+      <div class="hdr-search" id="geo-search">
+        <svg class="geo-icon" width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">
+          <circle cx="9" cy="9" r="6"/><line x1="13.5" y1="13.5" x2="18" y2="18"/>
+        </svg>
+        <input type="text" id="geo-input" class="geo-input" placeholder="Search location…" autocomplete="off" spellcheck="false" />
+        <ul class="geo-results" id="geo-results"></ul>
+      </div>
+
+      <div class="hdr-live">
+        <div class="hdr-live-dot"></div>
+        LIVE
+      </div>
+
+      <!-- Wrap Inspector trigger -->
+      <button id="btn-wrap-inspector" class="panel-toggle" aria-label="Open Wrap Inspector" aria-expanded="false" title="Wrap Inspector (W) — what each layer sees">
+        <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <circle cx="10" cy="10" r="8"/>
+          <line x1="10" y1="9" x2="10" y2="14"/>
+          <circle cx="10" cy="6.5" r="0.5" fill="currentColor" stroke="none"/>
         </svg>
       </button>
 
+      <!-- Left panel toggle -->
+      <button id="btn-toggle-lpanel" class="panel-toggle active" title="Toggle left panel" aria-label="Toggle left panel">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4">
+          <rect x="1" y="1" width="10" height="10" rx="1"/>
+          <line x1="4" y1="1" x2="4" y2="11"/>
+        </svg>
+      </button>
+
+      <!-- Right panel toggle -->
+      <button id="btn-toggle-rpanel" class="panel-toggle active" title="Toggle right panel" aria-label="Toggle right panel">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4">
+          <rect x="1" y="1" width="10" height="10" rx="1"/>
+          <line x1="8" y1="1" x2="8" y2="11"/>
+        </svg>
+      </button>
     </div>
   </header>
 
-  <!-- ============================== LEFT: LAYERS ============================== -->
-  <aside class="panel panel-left" id="layers-panel" aria-label="Impact layers">
-    <div class="panel-section">
-      <div class="panel-section-head">
-        <span>IMPACT LAYERS</span>
-        <span class="count" id="layers-count">0 / 10</span>
+  <!-- ═══════════════════════════ LEFT PANEL (272px) ═══════════════════════════ -->
+  <aside class="panel-left" id="panel-left" aria-label="Layers and controls">
+    <div class="panel-left-inner">
+
+      <!-- Tab bar -->
+      <div class="lp-tabs">
+        <button class="lp-tab active" data-tab="layers">Layers</button>
+        <button class="lp-tab" data-tab="program">Program</button>
+        <button class="lp-tab" data-tab="geometry">Geometry</button>
       </div>
-      <div class="layer-list" id="layer-list">
-        <!-- Rendered by js/ui/panel-layers.js — one .layer row per item in LAYERS -->
-      </div>
-    </div>
+
+      <!-- Scroll area -->
+      <div class="panel-scroll">
+
+        <!-- LAYERS TAB -->
+        <div class="lp-tab-body active" id="lp-layers">
+          <div class="layer-count-bar">
+            <span class="label-xs">Active Layers</span>
+            <span class="mono" id="layers-count">0 / 15</span>
+          </div>
+          <div id="layer-list"></div>
+        </div>
+
+        <!-- PROGRAM TAB -->
+        <div class="lp-tab-body" id="lp-program">
+          <div class="ctrl-form">
+            <label class="ctrl-label">PROGRAM TYPE
+              <select id="in-program" class="ctrl-field">
+                <option value="museum_art">Museum · Art</option>
+                <option value="museum_science">Museum · Science</option>
+                <option value="museum_media" selected>Museum · Media / Digital</option>
+                <option value="office">Office</option>
+                <option value="residential">Residential</option>
+                <option value="hotel">Hotel</option>
+                <option value="retail">Retail</option>
+                <option value="education">Education</option>
+                <option value="lab">Lab / Research</option>
+              </select>
+            </label>
+            <label class="ctrl-label">GFA m²
+              <input type="number" id="in-gfa" class="ctrl-field" step="100" value="13750"/>
+            </label>
+            <label class="ctrl-label">HOURS / WEEK
+              <input type="number" id="in-hours" class="ctrl-field" step="1" value="60"/>
+            </label>
+            <label class="ctrl-label">ADMISSION $
+              <input type="number" id="in-price" class="ctrl-field" step="1" value="28"/>
+            </label>
+            <label class="ctrl-label">STAFF
+              <input type="number" id="in-staff" class="ctrl-field" step="1" value="120"/>
+            </label>
+          </div>
+        </div>
+
+        <!-- GEOMETRY TAB -->
+        <div class="lp-tab-body" id="lp-geometry">
+          <div class="ctrl-form">
+            <label class="ctrl-label">RADIUS
+              <div class="ctrl-slider-row">
+                <input type="range" id="in-radius" min="100" max="1500" step="50" value="400"/>
+                <span id="v-radius" class="mono">400 m</span>
+              </div>
+            </label>
+            <label class="ctrl-label">MODE
+              <select id="in-geo-mode" class="ctrl-field">
+                <option value="euclidean" selected>EUCLIDEAN</option>
+                <option value="isochrone">WALK ISOCHRONE</option>
+                <option value="drawn">DRAWN</option>
+              </select>
+            </label>
+            <label id="iso-minutes-label" class="ctrl-label hidden">WALK MINUTES
+              <select id="in-iso-minutes" class="ctrl-field">
+                <option value="10">10 min</option>
+                <option value="15" selected>15 min</option>
+                <option value="20">20 min</option>
+              </select>
+            </label>
+          </div>
+          <div id="draw-controls" class="ctrl-btn-row hidden">
+            <button id="btn-start-draw" class="btn-secondary">DRAW POLYGON</button>
+            <button id="btn-clear-draw" class="btn-secondary" disabled>CLEAR</button>
+          </div>
+          <div class="geo-notice">
+            <span class="prov-dot" data-prov="BENCHMARK" title="BENCHMARK: editorial parameter, not a measurement"></span>
+            Boundary is an editorial choice, not a measurement.
+          </div>
+          <!-- Hidden tag for panel-massing.js compatibility -->
+          <span id="geo-mode-tag" style="display:none">EUCLIDEAN · 400 m</span>
+        </div>
+
+      </div><!-- /.panel-scroll -->
+    </div><!-- /.panel-left-inner -->
   </aside>
 
-  <!-- ============================== MAIN: MAP ============================== -->
-  <main class="panel panel-main">
+  <!-- ═══════════════════════════ MAP ═══════════════════════════ -->
+  <main class="panel-main">
     <div id="map"></div>
 
-    <!-- Floating map overlays -->
+    <!-- HUD Overlays -->
     <div class="stage-overlay stage-overlay-tl">
       <div>SITE <strong id="site-coords">40.7536 / -74.0027</strong></div>
-      <div>MODE <strong id="mode-tag">CONTEXT</strong></div>
+      <div>MODE <strong id="mode-tag" class="tag-accent">CONTEXT</strong></div>
     </div>
     <div class="stage-overlay stage-overlay-tr">
       <div>ACTIVE <span id="active-layer-tag" class="tag-accent">— NONE —</span></div>
       <div>RADIUS <strong><span id="radius-readout">400</span> m</strong></div>
     </div>
     <div class="stage-overlay stage-overlay-bl">
-      <div>ZOOM <span id="zoom-readout">15.8</span></div>
-      <div>PITCH <span id="pitch-readout">55°</span></div>
-      <div>BEARING <span id="bearing-readout">-18°</span></div>
-    </div>
-    <div class="stage-overlay stage-overlay-br">
-      <div>EPSG <strong>4326 / 3857</strong></div>
-      <div>REF EPSG <strong>2263</strong></div>
+      <span>ZOOM <strong id="zoom-readout">15.8</strong></span>
+      <span>PITCH <strong id="pitch-readout">0°</strong></span>
+      <span>BEARING <strong id="bearing-readout">0°</strong></span>
     </div>
 
-    <!-- Massing drop zone (appears when empty) -->
-    <div class="drop-zone" id="drop-zone">
-      <div class="drop-zone-inner">
-        <div class="drop-zone-title">DROP GLB MASSING FILE</div>
-        <div class="drop-zone-sub">or click to browse · .glb / .gltf</div>
-        <input type="file" id="glb-input" accept=".glb,.gltf" hidden />
-      </div>
+    <!-- GLB drop zone -->
+    <div class="drop-zone hidden" id="drop-zone">
+      <div class="drop-zone-title">DROP GLB MASSING FILE</div>
+      <div class="drop-zone-sub">or click to browse · .glb / .gltf</div>
+      <input type="file" id="glb-input" accept=".glb,.gltf" hidden />
     </div>
   </main>
 
-  <!-- ============================== RIGHT: CONTROLS + READOUTS ============================== -->
-  <aside class="panel panel-right" id="right-panel" aria-label="Massing and readouts">
+  <!-- ═══════════════════════════ RIGHT PANEL (296px) ═══════════════════════════ -->
+  <aside class="panel-right" id="panel-right" aria-label="Readouts and massing">
+    <div class="panel-right-inner">
 
-    <!-- (a) MASSING CONTROLS -->
-    <section class="right-section" id="massing-controls">
+      <!-- Panel header (dynamic) -->
       <div class="panel-section-head">
-        <span>MASSING MODEL</span>
-        <span id="massing-status" class="count">NOT LOADED</span>
+        <div class="section-title" id="rp-title">IMPACT READOUTS</div>
+        <div class="section-sub" id="rp-sub">Scenario: BASELINE T0 · Radius: 400 m</div>
       </div>
-      <div class="control-block">
-        <button id="btn-load-glb" class="btn-primary">LOAD GLB</button>
-        <button id="btn-clear-glb" class="btn-secondary" disabled>CLEAR</button>
-      </div>
-      <div class="control-grid">
-        <label>ANCHOR LAT <input type="number" id="in-lat"  step="0.00001" value="40.75380"/></label>
-        <label>ANCHOR LON <input type="number" id="in-lon"  step="0.00001" value="-74.00630"/></label>
-        <label>ROTATION °  <input type="range"  id="in-rot" min="0" max="360" step="1" value="0"/><span id="v-rot">0°</span></label>
-        <label>Z OFFSET m  <input type="number" id="in-z"   step="0.5" value="0"/></label>
-        <label>SCALE       <input type="number" id="in-scale" step="0.01" value="1"/></label>
-      </div>
-      <div class="derived-block">
-        <div class="derived-row"><span>FOOTPRINT</span><strong id="out-footprint">— m²</strong></div>
-        <div class="derived-row"><span>HEIGHT</span><strong id="out-height">— m</strong></div>
-        <div class="derived-row"><span>VOLUME</span><strong id="out-volume">— m³</strong></div>
-        <div class="derived-row"><span>FLOORS (est)</span><strong id="out-floors">—</strong></div>
-      </div>
-    </section>
 
-    <!-- (b) IMPACT GEOMETRY -->
-    <section class="right-section" id="impact-geometry">
-      <div class="panel-section-head">
-        <span>IMPACT GEOMETRY</span>
-        <span class="count" id="geo-mode-tag">EUCLIDEAN · 400 m</span>
-      </div>
-      <div class="control-grid">
-        <label class="span-full">RADIUS m
-          <input type="range" id="in-radius" min="100" max="1500" step="50" value="400"/>
-          <span id="v-radius">400 m</span>
-        </label>
-        <label class="span-full">MODE
-          <select id="in-geo-mode">
-            <option value="euclidean" selected>EUCLIDEAN</option>
-            <option value="isochrone">WALK ISOCHRONE</option>
-            <option value="drawn">DRAWN</option>
-          </select>
-        </label>
-        <label id="iso-minutes-label" class="span-full hidden">WALK MINUTES
-          <select id="in-iso-minutes">
-            <option value="10">10 min</option>
-            <option value="15" selected>15 min</option>
-            <option value="20">20 min</option>
-          </select>
-        </label>
-      </div>
-      <div id="draw-controls" class="control-block hidden">
-        <button id="btn-start-draw" class="btn-secondary">DRAW POLYGON</button>
-        <button id="btn-clear-draw" class="btn-secondary" disabled>CLEAR</button>
-      </div>
-      <div class="geo-notice">
-        <span class="prov-dot" data-prov="BENCHMARK" title="BENCHMARK: editorial parameter, not a measurement"></span>
-        Boundary is an editorial choice, not a measurement.
-      </div>
-    </section>
+      <!-- MASSING mode body -->
+      <div class="rp-mode-body" id="rp-massing">
+        <div class="panel-scroll">
 
-    <!-- (c) PROGRAM SPEC -->
-    <section class="right-section" id="program-spec">
-      <div class="panel-section-head"><span>PROGRAM SPEC</span></div>
-      <div class="control-grid">
-        <label>TYPE
-          <select id="in-program">
-            <option value="museum_art">Museum · Art</option>
-            <option value="museum_science">Museum · Science</option>
-            <option value="museum_media" selected>Museum · Media / Digital</option>
-            <option value="office">Office</option>
-            <option value="residential">Residential</option>
-            <option value="hotel">Hotel</option>
-            <option value="retail">Retail</option>
-            <option value="education">Education</option>
-            <option value="lab">Lab / Research</option>
-          </select>
-        </label>
-        <label>GFA m²      <input type="number" id="in-gfa"    step="100"  value="13750"/></label>
-        <label>HOURS/WEEK  <input type="number" id="in-hours"  step="1"    value="60"/></label>
-        <label>ADMISSION $ <input type="number" id="in-price"  step="1"    value="28"/></label>
-        <label>STAFF       <input type="number" id="in-staff"  step="1"    value="120"/></label>
-      </div>
-    </section>
+          <div class="ctrl-btn-row" style="padding:12px 18px; border-bottom:1px solid var(--ln-1);">
+            <button id="btn-load-glb" class="btn-primary">LOAD GLB</button>
+            <button id="btn-clear-glb" class="btn-secondary" disabled>CLEAR</button>
+          </div>
 
-    <!-- (c) READOUTS -->
-    <section class="right-section" id="readouts">
-      <div class="panel-section-head"><span>READOUTS</span><span class="count" id="readout-context">OVERVIEW</span></div>
-      <div id="readout-body">
-        <!-- Rendered by js/ui/panel-readouts.js -->
-      </div>
-    </section>
+          <div class="ctrl-form" style="padding:12px 18px; border-bottom:1px solid var(--ln-1);">
+            <label class="ctrl-label">ANCHOR LAT
+              <input type="number" id="in-lat" class="ctrl-field" step="0.00001" value="40.75380"/>
+            </label>
+            <label class="ctrl-label">ANCHOR LON
+              <input type="number" id="in-lon" class="ctrl-field" step="0.00001" value="-74.00630"/>
+            </label>
+            <label class="ctrl-label">ROTATION °
+              <div class="ctrl-slider-row">
+                <input type="range" id="in-rot" min="0" max="360" step="1" value="0"/>
+                <span id="v-rot" class="mono">0°</span>
+              </div>
+            </label>
+            <label class="ctrl-label">Z OFFSET m
+              <input type="number" id="in-z" class="ctrl-field" step="0.5" value="0"/>
+            </label>
+            <label class="ctrl-label">SCALE
+              <input type="number" id="in-scale" class="ctrl-field" step="0.01" value="1"/>
+            </label>
+          </div>
 
+          <div class="derived-block">
+            <div class="derived-label">DERIVED</div>
+            <div class="derived-row"><span>FOOTPRINT</span><strong id="out-footprint">— m²</strong></div>
+            <div class="derived-row"><span>HEIGHT</span><strong id="out-height">— m</strong></div>
+            <div class="derived-row"><span>VOLUME</span><strong id="out-volume">— m³</strong></div>
+            <div class="derived-row"><span>FLOORS (est)</span><strong id="out-floors">—</strong></div>
+          </div>
+
+          <div class="massing-status-bar">
+            STATUS: <strong id="massing-status">NOT LOADED</strong>
+          </div>
+
+          <!-- Hidden file input -->
+          <input type="file" id="glb-input-rp" accept=".glb,.gltf" hidden />
+
+        </div><!-- /.panel-scroll -->
+      </div><!-- /#rp-massing -->
+
+      <!-- IMPACT / LAYERS mode body -->
+      <div class="rp-mode-body active" id="rp-impact">
+        <div class="panel-scroll" id="readout-body">
+          <!-- Rendered by js/ui/panel-readouts.js -->
+        </div>
+      </div>
+
+    </div><!-- /.panel-right-inner -->
   </aside>
 
-  <!-- ============================== FOOTER ============================== -->
+  <!-- ═══════════════════════════ FOOTER (30px) ═══════════════════════════ -->
   <footer class="app-footer">
-    <div class="marquee-track" id="marquee-track"></div>
+    <div class="footer-group">
+      <span class="footer-item">SCENARIO <strong id="scenario-tag">BASELINE T0</strong></span>
+      <span class="footer-item">RADIUS <strong><span id="radius-footer">400</span> m</strong></span>
+      <span class="footer-item">PROGRAM <strong id="program-tag">Museum · Media</strong></span>
+      <span class="footer-item">GFA <strong id="gfa-tag">13,750 m²</strong></span>
+    </div>
+    <div class="footer-group">
+      <span class="footer-item">EPSG <strong>4326 / 3857</strong></span>
+      <span class="footer-item">REF EPSG <strong>2263</strong></span>
+      <span class="footer-brand">ALLSPARK // IMPACT</span>
+    </div>
   </footer>
 
-  <!-- ============================== WRAP INSPECTOR ============================== -->
+  <!-- ═══════════════════════════ WRAP INSPECTOR ═══════════════════════════ -->
   <div id="wrap-inspector" class="wrap-inspector" role="dialog" aria-label="Wrap Inspector" aria-modal="false">
     <div class="wrap-inspector-header">
       <div>
@@ -249,15 +339,18 @@
         <div class="wrap-inspector-sub">what each layer sees — and what it does not</div>
       </div>
       <button class="wrap-inspector-close" id="wrap-inspector-close" aria-label="Close inspector">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
-          <line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/>
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4">
+          <line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/>
         </svg>
       </button>
     </div>
     <div class="wrap-inspector-body"></div>
   </div>
 
-  <!-- ============================== SCRIPTS ============================== -->
+  <!-- Legacy compat IDs -->
+  <span id="readout-context" style="display:none">OVERVIEW</span>
+  <span id="local-time" style="display:none"></span>
+
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

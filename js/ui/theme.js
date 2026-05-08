@@ -1,13 +1,13 @@
 /* =========================================================================
    ALLSPARK // IMPACT  ·  js/ui/theme.js
-   Enforces dark theme (reference site style).
+   Light theme — enforces the precision-instrument light aesthetic.
    ========================================================================= */
 
 export function initTheme(state) {
-  document.documentElement.setAttribute('data-theme', 'dark');
-  state.theme = 'dark';
+  document.documentElement.removeAttribute('data-theme');
+  state.theme = 'light';
 }
 
-export function onThemeChange(fn) { 
-  // No-op, theme is locked
+export function onThemeChange(_fn) {
+  // No-op — theme is fixed to light
 }

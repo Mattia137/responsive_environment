@@ -12,9 +12,11 @@ export function renderReadouts(state) {
   host.innerHTML = '';
   const ctxTag = document.getElementById('readout-context');
 
+  const rpTitle = document.getElementById('rp-title');
   const active = Array.from(state.activeLayerIds);
   if (active.length === 0) {
     if (ctxTag) ctxTag.textContent = 'OVERVIEW';
+    if (rpTitle) rpTitle.textContent = 'IMPACT READOUTS';
     host.appendChild(overviewCard(state));
     host.appendChild(summaryGrid(state));
     return;
@@ -23,6 +25,7 @@ export function renderReadouts(state) {
   const primary = active[active.length - 1]; // most recently toggled
   const layerInfo = LAYERS.find(L => L.id === primary);
   if (ctxTag) ctxTag.textContent = layerInfo?.name || primary;
+  if (rpTitle) rpTitle.textContent = (layerInfo?.name || primary).toUpperCase();
   const result = state.impactResults[primary];
   if (!result) return;
 
@@ -38,7 +41,7 @@ function formatUncertainty(u) {
     if (Math.abs(n) >= 1000) return (n/1000).toFixed(1) + 'k';
     return Number.isInteger(n) ? n.toString() : n.toFixed(1);
   };
-  return `<div style="font-size: 8px; color: var(--ink-dim); margin-top: 3px; letter-spacing: 0.05em; font-family: 'Fragment Mono', monospace;">range: ${f(low)} – ${f(high)}</div>`;
+  return `<div style="font-size: 8px; color: var(--ink-4); margin-top: 3px; letter-spacing: 0.05em; font-family: 'DM Mono', monospace;">range: ${f(low)} – ${f(high)}</div>`;
 }
 
 function overviewCard(state) {
@@ -48,9 +51,9 @@ function overviewCard(state) {
     <div class="readout-card-title">SCENARIO · T${state.timeStep}</div>
     <div class="big-number">${state.activeLayerIds.size}<span class="big-number-unit">/ ${LAYERS.length} layers active</span></div>
     <div class="big-delta sign-neu">${state.timeStep === 0 ? 'baseline · pre-intervention' : 'projected · time horizon'}</div>
-    <div style="margin-top:14px; color:var(--ink-dim); font-size:11px; line-height:1.6;">
+    <div style="margin-top:14px; color:var(--ink-3); font-size:11px; line-height:1.6;">
       Select a layer from the left to inspect its projection.
-      ${state.massing.loaded ? '' : '<br><br><strong style="color:var(--accent)">No massing loaded.</strong> Default geometry applied — upload a GLB for project-specific projections.'}
+      ${state.massing.loaded ? '' : '<br><br><strong style="color:var(--red)">No massing loaded.</strong> Default geometry applied — upload a GLB for project-specific projections.'}
     </div>
   `;
   return el;
@@ -92,7 +95,7 @@ function headlineCard(id, result, timeStep) {
     ${h.uncertainty ? formatUncertainty(h.uncertainty) : ''}
     <div class="big-delta sign-${h.sign}" style="margin-top: 6px;">${isProj ? 'Δ ' + h.delta : 'baseline'}</div>
     <svg class="spark" viewBox="0 0 200 32" preserveAspectRatio="none">
-      <polyline points="${sparkline(id, timeStep, h.sign)}" fill="none" stroke="var(--${h.sign === 'neg' ? 'negative' : h.sign === 'pos' ? 'positive' : 'neutral'})" stroke-width="1.2"/>
+      <polyline points="${sparkline(id, timeStep, h.sign)}" fill="none" stroke="var(--${h.sign === 'neg' ? 'neg' : h.sign === 'pos' ? 'pos' : 'neu'})" stroke-width="1.5" stroke-linejoin="round"/>
     </svg>
   `;
   return el;
@@ -124,7 +127,7 @@ function notesCard(id) {
   const note = LAYER_DETAILS[id]?.note || 'See data sources for methodology.';
   el.innerHTML = `
     <div class="readout-card-title">ANALYST NOTE</div>
-    <div class="serif" style="font-size:12.5px; line-height:1.55; color:var(--ink);">
+    <div style="font-size:11px; line-height:1.65; color:var(--ink-3); font-style:italic;">
       ${note}
     </div>
   `;

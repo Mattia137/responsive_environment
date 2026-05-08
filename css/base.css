@@ -1,71 +1,86 @@
 /* ========================================================================
    ALLSPARK // IMPACT  ·  base.css
-   Resets, typography, and theme variables (dark + light)
+   Resets, typography, and design tokens — Light precision-instrument theme
    ======================================================================== */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
   height: 100%;
-  font-family: 'Fragment Mono', ui-monospace, monospace;
+  font-family: 'DM Sans', sans-serif;
   font-size: 11px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: var(--bg);
-  color: var(--ink);
+  background: var(--bg-map);
+  color: var(--ink-1);
   overflow: hidden;
 }
 
-/* --- Serif for big numbers in readouts --- */
-.serif { font-family: 'Instrument Serif', Georgia, serif; }
-
 /* --------------------------------------------------------------
-   DARK THEME  (default)
+   DESIGN TOKENS — Light precision-instrument theme
    -------------------------------------------------------------- */
-:root,
-html[data-theme="dark"] {
-  /* Reference Site Tokens */
-  --t1: rgba(255,255,255,1.00);
-  --t2: rgba(255,255,255,0.90);
-  --t3: rgba(255,255,255,0.70);
-  --t4: rgba(255,255,255,0.50);
-  --t5: rgba(255,255,255,0.30);
-  --ln1: rgba(255,255,255,0.04);
-  --ln2: rgba(255,255,255,0.07);
-  --ln3: rgba(255,255,255,0.14);
+:root {
+  /* ── Backgrounds ── */
+  --bg-map:    #ffffff;
+  --bg-panel:  oklch(98.5% 0.004 60);   /* ≈ #faf9f7 — panel surface */
+  --bg-panel2: oklch(96.5% 0.006 58);   /* ≈ #f4f1ee — secondary / inputs */
+  --bg-panel3: oklch(94%   0.008 56);   /* ≈ #ede9e5 — tertiary / category headers */
 
-  --bg:              #000000;
-  --bg-2:            #000000;
-  --bg-3:            #000000;
-  --bg-panel:        rgba(0,0,0,0.6);
-  
-  --ink:             var(--t2);
-  --ink-dim:         var(--t4);
-  --ink-faint:       var(--t5);
-  --line:            var(--ln2);
-  --line-bright:     var(--ln3);
-  --accent:          var(--t1);
-  --accent-dim:      var(--t5);
-  --accent-glow:     var(--ln2);
-  --positive:        #88ffaa;
-  --negative:        #ffcc66;
-  --neutral:         #66ddff;
+  /* ── Ink (text) hierarchy ── */
+  --ink-1: oklch(18% 0.008 50);   /* ≈ #2a2725 — primary text */
+  --ink-2: oklch(36% 0.008 50);   /* ≈ #5a5550 — secondary text */
+  --ink-3: oklch(55% 0.008 50);   /* ≈ #8a8480 — labels / placeholders */
+  --ink-4: oklch(70% 0.008 50);   /* ≈ #b0ada8 — faint / metadata */
 
-  /* Map style URL (applied dynamically in js/map.js) */
-  --map-style: "streets-v2-dark";
+  /* ── Lines / borders ── */
+  --ln-1: oklch(92% 0.005 55);   /* ≈ #eae8e4 — dividers */
+  --ln-2: oklch(86% 0.007 54);   /* ≈ #dbd8d3 — borders */
+  --ln-3: oklch(78% 0.009 53);   /* ≈ #c8c4be — stronger borders */
 
-  /* Overlay colors for MapLibre paint props */
-  --map-fill:         #000000;
-  --map-stroke:       var(--ln1);
-  --map-point:        var(--t2);
-  --map-point-accent: var(--t1);
+  /* ── Accent — vermillion ── */
+  --red:       oklch(58% 0.20 28);   /* ≈ #c94e2a — primary accent */
+  --red-dim:   oklch(70% 0.12 28);   /* ≈ #d8937c — muted accent */
+  --red-ghost: oklch(95% 0.04 28);   /* ≈ #fdf0ec — tinted bg */
 
-  --shadow-1: 0 1px 2px rgba(0,0,0,0.5);
-  --shadow-2: 0 4px 16px rgba(0,0,0,0.8);
+  /* ── Layer category colours ── */
+  --c-env: oklch(55% 0.14 148);   /* green  — Environment */
+  --c-eco: oklch(52% 0.14 248);   /* blue   — Economic */
+  --c-log: oklch(54% 0.14 32);    /* orange — Logistics */
+
+  /* ── Status ── */
+  --pos: oklch(50% 0.14 148);   /* green — positive delta */
+  --neg: oklch(50% 0.16 22);    /* red   — negative delta */
+  --neu: oklch(52% 0.14 80);    /* amber — neutral */
+
+  /* ── Shadows ── */
+  --sh-1: 0 1px 3px rgba(0,0,0,0.06);
+  --sh-2: 0 4px 16px rgba(0,0,0,0.09);
+
+  /* ── Layout dimensions ── */
+  --hdr-h:     52px;
+  --lpanel-w:  272px;
+  --rpanel-w:  296px;
+  --footer-h:  30px;
+
+  /* ── Legacy aliases (keeps existing JS/CSS refs working) ── */
+  --bg:          var(--bg-map);
+  --bg-2:        var(--bg-panel2);
+  --bg-3:        var(--bg-panel3);
+  --ink:         var(--ink-1);
+  --ink-dim:     var(--ink-3);
+  --ink-faint:   var(--ink-4);
+  --line:        var(--ln-1);
+  --line-bright: var(--ln-2);
+  --accent:      var(--red);
+  --accent-dim:  var(--red-dim);
+  --accent-glow: var(--red-ghost);
+  --positive:    var(--pos);
+  --negative:    var(--neg);
+  --neutral:     var(--neu);
+  --shadow-1:    var(--sh-1);
+  --shadow-2:    var(--sh-2);
 }
-
-
 
 /* --------------------------------------------------------------
    Common typography utilities
@@ -75,35 +90,40 @@ html[data-theme="dark"] {
   font-size: 9px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--ink-dim);
+  color: var(--ink-3);
 }
 .label-sm {
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--ink-dim);
+  color: var(--ink-3);
 }
-.mono { font-family: 'Fragment Mono', monospace; font-feature-settings: "tnum"; }
+.mono { font-family: 'DM Mono', monospace; font-feature-settings: "tnum"; font-variant-numeric: tabular-nums; }
 
-.tag-accent { color: var(--accent); }
-.sign-pos   { color: var(--positive); }
-.sign-neg   { color: var(--negative); }
-.sign-neu   { color: var(--neutral); }
+.tag-accent { color: var(--red); }
+.sign-pos   { color: var(--pos); }
+.sign-neg   { color: var(--neg); }
+.sign-neu   { color: var(--neu); }
 
 input, select, button, textarea {
   font-family: inherit;
   font-size: inherit;
   color: inherit;
   background: transparent;
-  border: 1px solid var(--line-bright);
+  border: 1px solid var(--ln-2);
   padding: 4px 6px;
 }
-input:focus, select:focus, button:focus { outline: 1px solid var(--accent); outline-offset: 1px; }
+input:focus, select:focus, button:focus { outline: 1px solid var(--red); outline-offset: 1px; }
 
-::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar { width: 3px; height: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--line-bright); }
-::-webkit-scrollbar-thumb:hover { background: var(--ink-faint); }
+::-webkit-scrollbar-thumb { background: var(--ln-2); }
+::-webkit-scrollbar-thumb:hover { background: var(--ln-3); }
+
+/* --------------------------------------------------------------
+   Blink animation for live dot
+   -------------------------------------------------------------- */
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.15; } }
 
 /* --------------------------------------------------------------
    Force-hide MapTiler / MapLibre branding
@@ -113,8 +133,10 @@ input:focus, select:focus, button:focus { outline: 1px solid var(--accent); outl
 .maplibregl-ctrl-attrib-button,
 .maplibregl-ctrl-attrib-inner,
 .maptiler-ctrl-logo,
-.maptiler-ctrl-attrib {
+.maptiler-ctrl-attrib,
+.maplibregl-ctrl-bottom-right,
+.maplibregl-ctrl-bottom-left {
   display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
-
-

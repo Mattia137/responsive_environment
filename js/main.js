@@ -20,7 +20,7 @@ import { initWrapInspector, toggle as toggleWrapInspector, syncActiveLayer } fro
    APPLICATION STATE — single source of truth
    ================================================================ */
 const state = {
-  theme: 'dark',
+  theme: 'light',
   timeStep: 0,          // 0: Baseline, 1: Build, 2: Open, 3: Settled, 4: Horizon
   activeLayerIds: new Set(),
   massing: {
@@ -136,16 +136,22 @@ async function boot() {
   /* 7. Geocoder search */
   wireGeoSearch();
 
-  /* 8b. Wrap Inspector */
+  /* 8. Wrap Inspector */
   initWrapInspector();
 
-  /* 8. Live clock */
-  startClock();
+  /* 9. Mode toggle (layers / massing / impact) */
+  wireModeToggle();
 
-  /* 9. Footer marquee */
-  buildMarquee();
+  /* 10. Panel collapse toggles */
+  wirePanelToggles();
 
-  /* 10. Keyboard shortcuts */
+  /* 11. Left panel tab bar */
+  wireLpTabs();
+
+  /* 12. Footer init */
+  initFooter();
+
+  /* 13. Keyboard shortcuts */
   document.addEventListener('keydown', e => {
     if (['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) return;
     if (e.code === 'ArrowLeft') { e.preventDefault(); setTimeStep(Math.max(0, state.timeStep - 1)); }
@@ -166,34 +172,28 @@ function wireTimeScrubber() {
   });
 }
 
+const SCRUB_LABELS = ['BASELINE T0', 'BUILD T1', 'OPEN +1Y', 'SETTLED +5Y', 'HORIZON +20Y'];
+
 function setTimeStep(step) {
   state.timeStep = step;
-  
-  const steps = document.querySelectorAll('.scrubber-step');
-  const fill = document.getElementById('scrubber-fill');
-  
-  steps.forEach((btn, idx) => {
+
+  document.querySelectorAll('.scrubber-step').forEach((btn, idx) => {
     btn.classList.toggle('active', idx === step);
     btn.classList.toggle('filled', idx < step);
   });
-  
-  if (fill) {
-    fill.style.width = `${(step / 4) * 100}%`;
-  }
-  
-  const tags = [
-    'BASELINE',
-    'CONSTRUCTION · PEAK',
-    '+ MASSING · OPEN +1Y',
-    '+ MASSING · SETTLED +5Y',
-    '+ MASSING · HORIZON +20Y'
-  ];
-  const tagEl = document.getElementById('scenario-tag');
-  if (tagEl) tagEl.textContent = tags[step];
-  
+
+  const fill = document.getElementById('scrubber-fill');
+  if (fill) fill.style.width = `${(step / 4) * 100}%`;
+
+  const label = SCRUB_LABELS[step];
+
+  const scenarioTag = document.getElementById('scenario-tag');
+  if (scenarioTag) scenarioTag.textContent = label;
+
   const modeTag = document.getElementById('mode-tag');
   if (modeTag) modeTag.textContent = step === 0 ? 'CONTEXT' : 'PROJECTION';
-  
+
+  _syncRpSub();
   fullUpdate();
 }
 
@@ -297,6 +297,8 @@ function fullUpdate() {
   // Render UI
   renderLayers(state);
   renderReadouts(state);
+  _syncRpSub();
+  _syncFooter();
 
   // Render map overlays — only when mode is 'after' or we want baseline vis
   renderActiveLayers(state);
@@ -350,54 +352,126 @@ function wireGeoSearch() {
 }
 
 /* ================================================================
-   LIVE CLOCK
+   MODE TOGGLE (layers / massing / impact)
    ================================================================ */
-function startClock() {
-  const el = document.getElementById('local-time');
-  if (!el) return;
-  const tick = () => {
-    const now = new Date();
-    el.textContent = now.toLocaleTimeString('en-US', { hour12: false });
-  };
-  tick();
-  setInterval(tick, 1000);
+let _currentMode = 'impact';
+
+function wireModeToggle() {
+  document.querySelectorAll('.mode-btn[data-mode]').forEach(btn => {
+    btn.addEventListener('click', () => setMode(btn.dataset.mode));
+  });
+}
+
+function setMode(mode) {
+  _currentMode = mode;
+
+  /* Highlight active button */
+  document.querySelectorAll('.mode-btn[data-mode]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === mode);
+  });
+
+  /* Show correct right panel body */
+  document.querySelectorAll('.rp-mode-body').forEach(el => {
+    el.classList.remove('active');
+  });
+  if (mode === 'massing') {
+    document.getElementById('rp-massing')?.classList.add('active');
+  } else {
+    document.getElementById('rp-impact')?.classList.add('active');
+  }
+
+  /* Update right panel header title */
+  const titleEl = document.getElementById('rp-title');
+  if (titleEl) {
+    titleEl.textContent = mode === 'massing' ? 'MASSING MODEL'
+      : mode === 'impact'                    ? 'IMPACT READOUTS'
+      : 'LAYER SETTINGS';
+  }
+
+  _syncRpSub();
 }
 
 /* ================================================================
-   FOOTER MARQUEE — cycles dataset names + sources
+   PANEL COLLAPSE TOGGLES
    ================================================================ */
-function buildMarquee() {
-  const track = document.getElementById('marquee-track');
-  if (!track) return;
-  const sources = [
-    'EPA AirNow API',
-    'NYC DOHMH NYCCAS',
-    'NYC LL84 Energy Disclosure',
-    'NYC DOT Pedestrian Volumes',
-    'MTA Daily Ridership',
-    'MapPLUTO',
-    'NYC DOF Rolling Sales',
-    'StreetEasy ZORI',
-    'HUD Fair Market Rent',
-    'ACS 5-Year Census',
-    'HPD Eviction Filings',
-    'DCP Storefront Tracker',
-    'NYC DOF Business Registrations',
-    'Citi Bike System Data',
-    'NYC DOB Job Filings',
-    'Turner Cost Index',
-    'EC3 Building Transparency',
-    'NYC DEP CSO Outfalls',
-    'NOAA Atlas 14',
-    'NYC DSNY Commercial Waste Zones',
-    'NYC SoundScore',
-    'NYC 311 Noise Complaints',
-    'Furman Center',
-    'MapTiler GL JS',
-    'OpenStreetMap',
-  ];
-  const sep = '   ·   ';
-  const text = sources.join(sep);
-  // Duplicate for seamless scroll loop
-  track.textContent = text + sep + text + sep;
+function wirePanelToggles() {
+  document.getElementById('btn-toggle-lpanel')?.addEventListener('click', () => {
+    const panel = document.getElementById('panel-left');
+    if (!panel) return;
+    const isOpen = !panel.classList.contains('collapsed');
+    panel.classList.toggle('collapsed', isOpen);
+    document.body.classList.toggle('lpanel-closed', isOpen);
+    document.getElementById('btn-toggle-lpanel')?.classList.toggle('active', !isOpen);
+  });
+
+  document.getElementById('btn-toggle-rpanel')?.addEventListener('click', () => {
+    const panel = document.getElementById('panel-right');
+    if (!panel) return;
+    const isOpen = !panel.classList.contains('collapsed');
+    panel.classList.toggle('collapsed', isOpen);
+    document.body.classList.toggle('rpanel-closed', isOpen);
+    document.getElementById('btn-toggle-rpanel')?.classList.toggle('active', !isOpen);
+  });
 }
+
+/* ================================================================
+   LEFT PANEL TABS
+   ================================================================ */
+function wireLpTabs() {
+  document.querySelectorAll('.lp-tab[data-tab]').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.lp-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.lp-tab-body').forEach(b => b.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(`lp-${tab.dataset.tab}`)?.classList.add('active');
+    });
+  });
+}
+
+/* ================================================================
+   RIGHT PANEL SUBTITLE SYNC
+   ================================================================ */
+function _syncRpSub() {
+  const sub = document.getElementById('rp-sub');
+  if (!sub) return;
+  const label   = SCRUB_LABELS[state.timeStep] || 'BASELINE T0';
+  const radius  = state.impactGeometry?.radius_m ?? 400;
+  const geoMode = state.impactGeometry?.mode ?? 'euclidean';
+  const radiusStr = geoMode === 'euclidean' ? `${radius} m`
+    : geoMode === 'isochrone'               ? `${state.impactGeometry.iso_minutes ?? 15} min walk`
+    : 'drawn';
+  sub.textContent = `Scenario: ${label} · Radius: ${radiusStr}`;
+}
+
+/* ================================================================
+   FOOTER INIT — populates static and dynamic footer items
+   ================================================================ */
+function initFooter() {
+  _syncFooter();
+}
+
+function _syncFooter() {
+  const programNames = {
+    museum_art:     'Museum · Art',
+    museum_science: 'Museum · Science',
+    museum_media:   'Museum · Media',
+    office:         'Office',
+    residential:    'Residential',
+    hotel:          'Hotel',
+    retail:         'Retail',
+    education:      'Education',
+    lab:            'Lab / Research',
+  };
+  const progEl = document.getElementById('program-tag');
+  if (progEl) progEl.textContent = programNames[state.program.type] || state.program.type;
+
+  const gfaEl = document.getElementById('gfa-tag');
+  if (gfaEl) gfaEl.textContent = `${(state.program.gfa_m2 || 0).toLocaleString()} m²`;
+
+  const radiusEl = document.getElementById('radius-footer');
+  if (radiusEl) radiusEl.textContent = state.impactGeometry?.radius_m ?? 400;
+}
+
+/* Legacy no-op stubs */
+function startClock() {}
+function buildMarquee() {}
